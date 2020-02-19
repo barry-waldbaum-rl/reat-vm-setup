@@ -24,7 +24,7 @@ Networking | reat-vpc
   
 4. SSH to your base image VM using GCP console.
 
-5. Install vi and set up the "trainee" user with password "P@ssword".
+5. Install 'vi' and set up the 'trainee' user with password 'P@ssword' and the ability to run 'sudo'.
 
 ```bash 
 sudo su
@@ -84,7 +84,7 @@ docker network create --subnet=172.18.0.0/16 redislabs
 docker run --name bind -d -v ./resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp   --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
-8. Generate keys for the user to VNC into the desktop and run a browser. The browser will be used to access admin console on local Redis Labs nodes and configure databases.
+8. Generate keys for students to VNC to their VM instance's desktop and run a browser locally. The browser allows students to  access admin console for Redis Labs nodes running on the VM's Docker subnet using local IP addresses.
 
 ```bash
 #
