@@ -1,53 +1,50 @@
 # REAT VM Setup
 
-1. Create a VPC in GCP with a custom subnet (172.18.0.0/16) in the region you want your VMs to run:
+1. Create a GCP VPC with custom subnet 172.18.0.0/16 in the region where you want your VM instances to run.
 
 Requirement | Specification
 ------------|--------------
-Name | reat-vpc
+Name | <vpc-name>
 Subnet Creation Mode | Custom
-Subnet Name | reat-subnet
-Subnet Region | us-west1
+Subnet Name | <subnet-name>
 Subnet IP Address Range | 172.18.0.0/16
 
-2. Create a firewall rule to allow ingress on all ports from all sources (0.0.0.0/0) to all targets.
+2. Create a firewall rule for your VPC that allows ingress on all ports from all sources (0.0.0.0/0) to all targets.
  
-3. Create a VM with following
+3. Create a VM in the region where you want your instances to run.
   
 Requirement  | Specification  
 ------------ | -------------
-Name | reat-ubuntu
-Region | us-west1
+Name | reat-vm
 CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
 Disk | 30 GB
-Networking | reat-vpc
+Networking | <vpc-name>
   
 4. SSH to your VM using GCP console.
 
-5. Install vi and set up user "trainee" and password "P@ssword"
+5. Install vi and set up the "trainee" user with password "P@ssword".
+
 ```bash 
 
 sudo su
 apt -y update
 apt -y install vim
 
-#add "trainee" user to "Docker" group so it can start and stop containers with Redis software
+#add "trainee" user to Docker group so it can start and stop containers with Redis software
 adduser --disabled-password --gecos "" trainee
 echo -e "PASSWORD\nPASSWORD" | sudo passwd trainee 
 groupadd docker
 usermod -aG docker $USER
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-systemctl restart sshd
-
-#test wetty working with the trainee user. Point your browser to (:21000 for VM IP-1, :13000 for VM IP-2):
-http://<vm-ip>:21000/wetty
 
 ```
-6. install docker-ce 
+
+6. Install docker-ce 
 
 ```bash
+
 apt-get install \
     apt-transport-https \
     ca-certificates \
@@ -64,24 +61,66 @@ add-apt-repository \
    stable"
 
 apt-get update
-
 apt-get -y install docker-ce
 
 ```
 
-7. Set the Docker training env
+7. Create a Docker subnet and add a DNS bind server to it
 
 ```bash
 
-# create a docker subnet
-mkdir /opt/redislabs
-echo 'nameserver 172.18.0.20' >  /opt/redislabs/resolv.conf
+mkdir resolve
+echo 'nameserver 172.18.0.20' > ./resolve/resolv.conf
+
 docker network create --subnet=172.18.0.0/16 redislabs
 
-# create the DNS 
-docker run --name bind -d -v /opt/redislabs/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp   --ip 172.18.0.20 rahimre/redislabs-training-bind
+docker run --name bind -d -v ./resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp   --ip 172.18.0.20 rahimre/redislabs-training-bind
 
-# create the north cluster
+```
+
+8. Generate your VNC sign-in keys for the "trainee" user.
+
+```bash
+
+#
+# reset
+# rm -rf .ssh vnc_docker
+#
+ssh-keygen -q -t rsa -N '' -f ~/.ssh/id_rsa 2>/dev/null <<< y >/dev/null
+cp -r .ssh/id_rsa.pub .ssh/authorized_keys 
+
+mkdir vnc_docker
+cp -r .ssh/ vnc_docker/ssh 
+
+```
+
+9. Make a Dockerfile that will add VNC software to the VM.
+
+```bash
+
+cat << EOF > vnc_docker/Dockerfile
+## Custom Dockerfile
+FROM consol/ubuntu-xfce-vnc
+
+# Switch to root user to install additional software
+USER 0
+
+## Install a gedit
+RUN apt update; apt install -y ssh;
+RUN mkdir /headless/.ssh
+COPY ./ssh /headless/.ssh
+RUN chown -R 1000 /headless/.ssh/
+COPY bashrc /headless/.bashrc
+RUN chown -R 1000 /headless/.bashrc
+
+## switch back to default user
+USER 1000
+EOF
+```
+
+10. 
+
+north cluster
 
 docker run -d  --cap-add=ALL --name n1  -v /opt/redislabs/resolv.conf:/etc/resolv.conf  -p 21443:8443 -p 41443:9443 --restart=always  --hostname  n1.north.redislabs-training.org --net redislabs --ip 172.18.0.21  redislabs/redis
 docker run -d  --cap-add=ALL --name n2  -v /opt/redislabs/resolv.conf:/etc/resolv.conf  -p 22443:8443 -p 42443:9443 --restart=always  --hostname  n2.north.redislabs-training.org  --net redislabs --ip 172.18.0.22   redislabs/redis
