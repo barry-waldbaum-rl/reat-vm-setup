@@ -27,7 +27,6 @@ Networking | <vpc-name>
 5. Install vi and set up the "trainee" user with password "P@ssword".
 
 ```bash 
-
 sudo su
 apt -y update
 apt -y install vim
@@ -38,13 +37,11 @@ echo -e "PASSWORD\nPASSWORD" | sudo passwd trainee
 groupadd docker
 usermod -aG docker $USER
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-
 ```
 
-6. Install docker-ce 
+6. Install docker-ce.
 
 ```bash
-
 apt-get install \
     apt-transport-https \
     ca-certificates \
@@ -62,26 +59,28 @@ add-apt-repository \
 
 apt-get update
 apt-get -y install docker-ce
-
 ```
 
-7. Create a Docker subnet and add a DNS bind server to it
+7. Switch to the "trainee" user and its home directory to finish setup.
 
 ```bash
+sudo su - trainee
+```
 
+7. Create a Docker subnet and add a DNS bind server to it.
+
+```bash
 mkdir resolve
 echo 'nameserver 172.18.0.20' > ./resolve/resolv.conf
 
 docker network create --subnet=172.18.0.0/16 redislabs
 
 docker run --name bind -d -v ./resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp   --ip 172.18.0.20 rahimre/redislabs-training-bind
-
 ```
 
-8. Generate your VNC sign-in keys for the "trainee" user.
+8. Generate keys for the user to VNC into the desktop and run a browser. The browser will be used to access admin console on local Redis Labs nodes and configure databases.
 
 ```bash
-
 #
 # reset
 # rm -rf .ssh vnc_docker
@@ -91,13 +90,11 @@ cp -r .ssh/id_rsa.pub .ssh/authorized_keys
 
 mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
-
 ```
 
-9. Make a Dockerfile that will add VNC software to the VM.
+9. Create a Dockerfile that will be used to add VNC software to the VM.
 
 ```bash
-
 cat << EOF > vnc_docker/Dockerfile
 ## Custom Dockerfile
 FROM consol/ubuntu-xfce-vnc
@@ -118,8 +115,45 @@ USER 1000
 EOF
 ```
 
-10. 
+10. Create a bashrc file that will run when a user signs into VNC. Aliases allow the user to start, stop, and ssh to nodes so they nodes look like they're running in machines or VMs instead of containers.
 
+```bash
+
+source \$STARTUPDIR/generate_container_user
+alias ssh_node="ssh trainee@\$EX_IP"
+alias ssh_n1="ssh -t trainee@\$EX_IP docker exec -it n1 bash "
+alias ssh_n2="ssh -t trainee@\$EX_IP docker exec -it n2 bash "
+alias ssh_n3="ssh -t trainee@\$EX_IP docker exec -it n3 bash "
+alias ssh_s1="ssh -t trainee@\$EX_IP docker exec -it s1 bash "
+alias ssh_s2="ssh -t trainee@\$EX_IP docker exec -it s2 bash "
+alias ssh_s3="ssh -t trainee@\$EX_IP docker exec -it s3 bash "
+
+alias start_n1="ssh -t trainee@\$EX_IP docker start n1 "
+alias start_n2="ssh -t trainee@\$EX_IP docker start n2 "
+alias start_n3="ssh -t trainee@\$EX_IP docker start n3 "
+
+alias stop_n1="ssh -t trainee@\$EX_IP docker stop n1 "
+alias stop_n2="ssh -t trainee@\$EX_IP docker stop n2 "
+alias stop_n3="ssh -t trainee@\$EX_IP docker stop n3 "
+
+alias start_s1="ssh -t trainee@\$EX_IP docker start s1 "
+alias start_s2="ssh -t trainee@\$EX_IP docker start s2 "
+alias start_s3="ssh -t trainee@\$EX_IP docker start s3 "
+
+alias stop_s1="ssh -t trainee@\$EX_IP docker stop s1 "
+alias stop_s2="ssh -t trainee@\$EX_IP docker stop s2 "
+alias stop_s3="ssh -t trainee@\$EX_IP docker stop s3 "
+
+alias reset_north="ssh -t trainee@\$EX_IP ./scripts/reset_north_cluster.sh "
+alias reset_south="ssh -t trainee@\$EX_IP ./scripts/reset_south_cluster.sh "
+alias create_north="ssh -t trainee@\$EX_IP ./scripts/create_north_cluster.sh "
+alias create_south="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
+EOF
+```
+
+11. 
+
+```bash
 north cluster
 
 docker run -d  --cap-add=ALL --name n1  -v /opt/redislabs/resolv.conf:/etc/resolv.conf  -p 21443:8443 -p 41443:9443 --restart=always  --hostname  n1.north.redislabs-training.org --net redislabs --ip 172.18.0.21  redislabs/redis
