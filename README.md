@@ -11,7 +11,7 @@ Subnet IP Address Range | 172.18.0.0/16
 
 2. Create a firewall rule for your VPC that allows ingress on all ports from all sources (0.0.0.0/0) to all targets.
  
-3. Create a base image VM in the region where you want your instances to run.
+3. Create a base VM image in the region where you want your instances to run (at the end of this setup page, you will take a GCP snapshot of this base VM, generate a VM image from the snapshot, and save that image to create VM instances for students in the future).
   
 Requirement  | Specification  
 ------------ | -------------
@@ -157,16 +157,19 @@ alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluste
 EOF
 ```
 
-11. Build the container from the Dockerfile that adds VNC software to the VM.
+11. Build the Docker image from the Dockerfile that adds VNC software to the VM.
 
 ```bash
 cd vnc_docker
 docker build -t re-vnc .
 ```
 
-12. Run the VNC container and that will allow a student to sign in to this VM instance's desktop on port 80 using the VM's public IP address (which can be found in GCP console after the student's VM instance is started).
+12. Run a Docker container from the Docker image that adds VNC software to the VM. VNC will allow the student to sign in to their VM instance's desktop on port 80 using the VM's public IP address (which can be found in GCP console after the student's VM instance is started).
 
 ```bash
+#
+# You can uncomment and run the following commands before running the next command if you need to reset the base VM image
+# and create an updated snapshot
 #
 # docker stop vnc; docker rm vnc;
 #
