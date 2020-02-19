@@ -92,7 +92,7 @@ mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
 ```
 
-9. Create a Dockerfile that will be used to add VNC software to the VM.
+9. Create the Dockerfile that will be used to add VNC software to the VM.
 
 ```bash
 cat << EOF > vnc_docker/Dockerfile
@@ -115,10 +115,10 @@ USER 1000
 EOF
 ```
 
-10. Create a bashrc file that will run when a user signs into VNC. Aliases allow the user to start, stop, and ssh to nodes so they nodes look like they're running in machines or VMs instead of containers.
+10. Create a bashrc file that will run when a user signs into VNC. Aliases allow the user to start, stop, and ssh to nodes as if they were running on machines or VMs instead of containers.
 
 ```bash
-
+cat << EOF > vnc_docker/bashrc
 source \$STARTUPDIR/generate_container_user
 alias ssh_node="ssh trainee@\$EX_IP"
 alias ssh_n1="ssh -t trainee@\$EX_IP docker exec -it n1 bash "
@@ -144,17 +144,28 @@ alias stop_s1="ssh -t trainee@\$EX_IP docker stop s1 "
 alias stop_s2="ssh -t trainee@\$EX_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$EX_IP docker stop s3 "
 
-alias reset_north="ssh -t trainee@\$EX_IP ./scripts/reset_north_cluster.sh "
-alias reset_south="ssh -t trainee@\$EX_IP ./scripts/reset_south_cluster.sh "
-alias create_north="ssh -t trainee@\$EX_IP ./scripts/create_north_cluster.sh "
-alias create_south="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
+alias reset_north_nodes="ssh -t trainee@\$EX_IP ./scripts/reset_north_nodes.sh "
+alias reset_south_nodes="ssh -t trainee@\$EX_IP ./scripts/reset_south_nodes.sh "
+alias create_north_cluster="ssh -t trainee@\$EX_IP ./scripts/create_north_cluster.sh "
+alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
 EOF
 ```
 
-11. 
+11. Build the container from the Dockerfile that adds VNC software to the VM.
 
 ```bash
-north cluster
+cd vnc_docker
+docker build -t re-vnc .
+```
+
+12. Run the VNC container and that will allow a student to sign in to this VM instance's desktop on port 80 using the VM's public IP address (which can be found in GCP console after the student's VM instance is started).
+
+```bash
+#
+# docker stop vnc; docker rm vnc;
+#
+docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
+```
 
 docker run -d  --cap-add=ALL --name n1  -v /opt/redislabs/resolv.conf:/etc/resolv.conf  -p 21443:8443 -p 41443:9443 --restart=always  --hostname  n1.north.redislabs-training.org --net redislabs --ip 172.18.0.21  redislabs/redis
 docker run -d  --cap-add=ALL --name n2  -v /opt/redislabs/resolv.conf:/etc/resolv.conf  -p 22443:8443 -p 42443:9443 --restart=always  --hostname  n2.north.redislabs-training.org  --net redislabs --ip 172.18.0.22   redislabs/redis
