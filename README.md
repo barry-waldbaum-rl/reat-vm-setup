@@ -1,6 +1,6 @@
-# RL Admin Training VM Setup
+# REAT VM Setup
 
-1. Create a VPC in GPC with a custom subnet (172.18.0.0/16) in the region you want your VMs to run:
+1. Create a VPC in GCP with a custom subnet (172.18.0.0/16) in the region you want your VMs to run:
 
 Requirement | Specification
 ------------|--------------
@@ -10,13 +10,13 @@ Subnet Name | reat-subnet
 Subnet Region | us-west1
 Subnet IP Address Range | 172.18.0.0/16
 
-2. Create a firewall rule for the VPC to allow ingress on all ports from all source instances (0.0.0.0/0) to all targets.
+2. Create a firewall rule to allow ingress on all ports from all sources (0.0.0.0/0) to all targets.
  
-3. Create a VM instance on GCP with following
+3. Create a VM with following
   
 Requirement  | Specification  
 ------------ | -------------
-Name | reat-ubuntu-ip1
+Name | reat-ubuntu
 Region | us-west1
 CPU | 4
 Memory | 15 GB
@@ -24,38 +24,16 @@ OS | Ubuntu 18.04 LTS
 Disk | 30 GB
 Networking | reat-vpc
   
-4. SSH to your VM using GCP  console.
+4. SSH to your VM using GCP console.
 
-5. Install wetty and set up user "trainee" with password "P@ssword"
+5. Install vi and set up user "trainee" and password "P@ssword"
 ```bash 
 
 sudo su
 apt -y update
-
-#install wetty - Terminal over HTTP and HTTPS
-apt -y install npm
-npm install -g wetty
-
-#install and configure supervisor to always run wetty
-apt -y install supervisor
-
-#install vi 
 apt -y install vim
 
-#create wetty.conf with vi as follows
-cd /etc/supervisor/conf.d
-vi wetty.conf
-
-#add the following lines in wetty.conf (port 21000 in VM for IP-1, port 13000 in VM for IP-2)
-[program:wetty]
-command=wetty -p 21000 
-
-#reload wetty with the new config
-supervisorctl reload wetty
-
-#save your changes to wetty.conf
-
-#add the trainee user to docker group so it can start and stop docker containers that include Redis Labs software
+#add "trainee" user to "Docker" group so it can start and stop containers with Redis software
 adduser --disabled-password --gecos "" trainee
 echo -e "PASSWORD\nPASSWORD" | sudo passwd trainee 
 groupadd docker
