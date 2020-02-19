@@ -4,9 +4,9 @@
 
 Requirement | Specification
 ------------|--------------
-Name | <vpc-name>
+Name | reat-vpc
 Subnet Creation Mode | Custom
-Subnet Name | <subnet-name>
+Subnet Name | reat-subnet
 Subnet IP Address Range | 172.18.0.0/16
 
 2. Create a firewall rule for your VPC that allows ingress on all ports from all sources (0.0.0.0/0) to all targets.
@@ -20,7 +20,7 @@ CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
 Disk | 30 GB
-Networking | <vpc-name>
+Networking | reat-vpc
   
 4. SSH to your VM using GCP console.
 
