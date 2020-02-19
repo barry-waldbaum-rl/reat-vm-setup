@@ -11,7 +11,7 @@ Subnet IP Address Range | 172.18.0.0/16
 
 2. Create a firewall rule for your VPC that allows ingress on all ports from all sources (0.0.0.0/0) to all targets.
  
-3. Create a VM in the region where you want your instances to run.
+3. Create a base image VM in the region where you want your instances to run.
   
 Requirement  | Specification  
 ------------ | -------------
@@ -22,7 +22,7 @@ OS | Ubuntu 18.04 LTS
 Disk | 30 GB
 Networking | reat-vpc
   
-4. SSH to your VM using GCP console.
+4. SSH to your base image VM using GCP console.
 
 5. Install vi and set up the "trainee" user with password "P@ssword".
 
@@ -31,12 +31,18 @@ sudo su
 apt -y update
 apt -y install vim
 
+# Set the default editor to vim
+update-alternatives --config editor
+
 #add "trainee" user to Docker group so it can start and stop containers with Redis software
 adduser --disabled-password --gecos "" trainee
 echo -e "PASSWORD\nPASSWORD" | sudo passwd trainee 
 groupadd docker
 usermod -aG docker $USER
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
+trainee ALL=(ALL) NOPASSWD:ALL
 ```
 
 6. Install docker-ce.
@@ -187,31 +193,11 @@ docker exec --user root s3 bash -c "iptables -t nat -I PREROUTING -p udp --dport
    
 ```
 
-8. Set the default editor to vim
-
-```
- update-alternatives --config editor
- ```
- 
-9. add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
-
-```
-trainee ALL=(ALL) NOPASSWD:ALL
-
-```
-
 10. add the following to user trainee's .bashrc 
 
 ```
-#sign in to wetty as trainee
-#add the following aliases to trainee's .bashrc file
 
-alias n1="sudo docker exec -it n1 bash "
-alias n2="sudo docker exec -it n2 bash "
-alias n3="sudo docker exec -it n3 bash "
-alias s1="sudo docker exec -it s1 bash "
-alias s2="sudo docker exec -it s2 bash "
-alias s3="sudo docker exec -it s3 bash "
+#add the following aliases to trainee's .bashrc file
 alias ns="sudo docker run -it --net redislabs   -v /opt/redislabs/resolv.conf:/etc/resolv.conf   tutum/dnsutils bash"
 alias crl="sudo docker run -it --net redislabs   -v /opt/redislabs/resolv.conf:/etc/resolv.conf   tutum/curl bash"
 alias redis="sudo docker run -v /opt/redislabs/resolv.conf:/etc/resolv.conf -v /home/trainee/redis:/data --net redislabs  -it redis bash "
