@@ -274,7 +274,16 @@ Now you are finished creating your base VM that will be used by students.
 
 Now you are ready to create new instances for students.
 
-18. Go to GCP > Images, find image 'reat-image' and create a new VM instance 'reat-instance'.
+18. Go to GCP > VM instances, create a new VM instance from 'reat-image' with the following:
+
+Requirement  | Specification  
+------------ | -------------
+Name | reat-instance
+CPU | 4
+Memory | 15 GB
+OS | Ubuntu 18.04 LTS
+Disk | from reat-image with 30 GB
+Networking | reat-vpc
 
 19. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
 
