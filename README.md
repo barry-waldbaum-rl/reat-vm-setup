@@ -133,7 +133,7 @@ USER 1000
 EOF
 ```
 
-10. Create a bashrc file that will run when a user signs into VNC. Aliases allow the user to start, stop, and ssh to nodes as if they were running on machines or VMs instead of containers.
+10. Create a bashrc file that will run when a user signs into VNC. Aliases allow the user to start, stop, and ssh to nodes as if they were running on machines or VMs instead of containers (STARTUPDIR = /dockerstartup/ ).
 
 ```bash
 cat << EOF > ~/vnc_docker/bashrc
