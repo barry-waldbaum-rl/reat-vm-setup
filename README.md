@@ -1,5 +1,15 @@
 # REAT VM Setup
 
+The goal is to setup one GCP VM that runs a local Docker network with:
+- VNC server for students to sign into
+- A DNS bind server for managing hostname lookups
+- 2 sets of 3 containers (each runs a Redis Enterprise node that students will start and group into 2 RES clusters).
+
+You are going to do the following:
+- Build a GCP VM with all the software and configuration
+- Take a snapshot of the VM and an image of the snapshot
+- Create 1 or more VM instances from the image for students to use.
+
 1. Create a GCP VPC with custom subnet 172.18.0.0/16 in the region where you want your VM instances to run.
 
 Requirement | Specification
