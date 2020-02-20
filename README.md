@@ -10,6 +10,8 @@ You are going to do the following:
 - Take a snapshot of the VM and an image of the snapshot
 - Create 1 or more VM instances from the image for students to use.
 
+Steps:
+
 1. Create a GCP VPC with custom subnet 172.18.0.0/16 in the region where you want your VM instances to run.
 
 Requirement | Specification
