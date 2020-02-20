@@ -254,13 +254,19 @@ if [ "$color_prompt" = yes ]; then
    #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 ```
 
+Now you are finished creating your base VM that will be used by students.
+
 16. Take a GCP snapshot of the running base VM called 'reat-snap'.
 
 17. Create a GCP image called 'reat-image' from the snapshot.
 
+Now you are ready to create new instances for students.
+
 18. Go to GCP > Images, find image 'reat-image' and create a new VM instance 'reat-instance'.
 
 19. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
+
+Now you are ready to test what a student would do with the instance.
 
 20. You can VNC in to the VM instance like a student would by pointing a browser to the instance's public IP and signing in with the password 'trainee!'.
 
