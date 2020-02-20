@@ -6,8 +6,8 @@ The goal is to setup one GCP VM that runs a local Docker network with:
 - 2 sets of 3 containers (each runs a Redis Enterprise node that students will start and group into 2 RES clusters).
 
 You are going to do the following:
-- Build a GCP VM with all the software and configuration
-- Take a snapshot of the VM and an image of the snapshot
+- Build a GCP base VM with all the software and configuration
+- Take a snapshot of the base VM and an image of the snapshot
 - Create 1 or more VM instances from the image for students to use.
 
 Steps:
