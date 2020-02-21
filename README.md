@@ -188,6 +188,8 @@ docker build -t re-vnc .
 docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
 ```
 
+NOTE 1: Setting EX_IP in the base VM creates the problem of passing this container environment variable to new VM instances with different IPs. It will have to be corrected somehow like the comment in NOTE 2 below.
+
 13. Create scripts that a student can run to reset Redis Labs nodes and create clusters on their VM instance.
 
 ```bash
@@ -286,6 +288,12 @@ Disk | from reat-image with 30 GB
 Networking | reat-vpc
 
 19. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
+
+NOTE 2: Somewhere we will have to do something equivalent to running the following on the new VM instance to correct for NOTE 1 above:
+
+```bash
+> sudo docker exec -it vnc bash -c "export EX_IP=172.18.0.19"
+```
 
 Now you are ready to test what a student would do with the instance.
 
