@@ -48,10 +48,9 @@ update-alternatives --config editor
 
 # Add 'trainee' user to 'docker' group so it can start and stop containers that run Redis software
 adduser --disabled-password --gecos "" trainee
-echo -e "PASSWORD\nPASSWORD" | sudo passwd trainee 
 groupadd docker
 usermod -aG docker $USER
-sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+usermod -aG docker trainee
 
 # add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
 trainee ALL=(ALL) NOPASSWD:ALL
