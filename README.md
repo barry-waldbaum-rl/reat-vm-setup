@@ -295,6 +295,11 @@ NOTE 2: Somewhere we will have to do something equivalent to running the followi
 > sudo docker exec -it vnc bash -c "export EX_IP=172.18.0.19"
 ```
 
+HOWEVER: The above doesn't stick in the container, just the bash shell. So you might need to edit the container config file in:
+```bash
+/var/lib/docker/containers/<container-id>/config.json.
+```
+
 Now you are ready to test what a student would do with the instance.
 
 20. You can VNC in to the VM instance like a student would by pointing a browser to the instance's public IP and signing in with the password 'trainee!'.
