@@ -170,13 +170,14 @@ alias create_north_cluster="ssh -t trainee@\$EX_IP ./scripts/create_north_cluste
 alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
 EOF
 
+mkdir scripts
 cat << EOF > scripts/restart_north_nodes.sh
 docker kill n1; docker rm n1;
 docker kill n2; docker rm n2;
 docker kill n3; docker rm n3;
-docker run -d --cap-add=ALL --name n1 -v ./resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n1.redislabs.org --net redislabs --ip 172.18.0.21 redislabs/redis
-docker run -d --cap-add=ALL --name n2 -v ./resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n2.redislabs.org --net redislabs --ip 172.18.0.22 redislabs/redis
-docker run -d --cap-add=ALL --name n3 -v ./resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n3.redislabs.org --net redislabs --ip 172.18.0.23 redislabs/redis
+docker run -d --cap-add=ALL --name n1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n1.redislabs.org --net redislabs --ip 172.18.0.21 redislabs/redis
+docker run -d --cap-add=ALL --name n2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n2.redislabs.org --net redislabs --ip 172.18.0.22 redislabs/redis
+docker run -d --cap-add=ALL --name n3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n3.redislabs.org --net redislabs --ip 172.18.0.23 redislabs/redis
 docker exec --user root n1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -186,9 +187,9 @@ cat << EOF > scripts/restart_south_nodes.sh
 docker kill s1; docker rm s1;
 docker kill s2; docker rm s2;
 docker kill s3; docker rm s3;
-docker run -d --cap-add=ALL --name s1 -v ./resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s1.redislabs.org --net redislabs --ip 172.18.0.31 redislabs/redis
-docker run -d --cap-add=ALL --name s2 -v ./resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s2.redislabs.org --net redislabs --ip 172.18.0.32 redislabs/redis
-docker run -d --cap-add=ALL --name s3 -v ./resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s3.redislabs.org --net redislabs --ip 172.18.0.33 redislabs/redis
+docker run -d --cap-add=ALL --name s1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s1.redislabs.org --net redislabs --ip 172.18.0.31 redislabs/redis
+docker run -d --cap-add=ALL --name s2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s2.redislabs.org --net redislabs --ip 172.18.0.32 redislabs/redis
+docker run -d --cap-add=ALL --name s3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s3.redislabs.org --net redislabs --ip 172.18.0.33 redislabs/redis
 docker exec --user root s1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
