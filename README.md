@@ -84,7 +84,7 @@ apt-get -y install docker-ce
 sudo su - trainee
 ```
 
-7. Create a Docker subnet and add a DNS bind server to it.
+7. Create the Docker subnet and add the DNS bind server to it.
 
 ```bash
 mkdir resolve
@@ -95,7 +95,7 @@ docker network create --subnet=172.18.0.0/16 redislabs
 docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
-8. Create keys for students to VNC to instances and run a local browser. Students use a local browser to access Redis Lab admin consoles for their (local) nodes. 
+8. Create keys so students can silently SSH from the VNC container to the base VM and run commands on RL nodes as if they were running on machines or VMs instead of containers. 
 
 ```bash
 #
@@ -248,7 +248,12 @@ You're finished creating the base VM.
 
 14. Create an image from the snapshot called 'reat-image'.
 
-15. Create an instance from the image that also runs the VNC Docker container on startup. The VNC container receives the instance's IP address. Once a student is VNC in to the container, they can SSH to the host VM.
+15. Create a test instance from the image. The startup script runs the VNC container and passes in the VM instance's private IP so students can SSH from the VNC container to the base image.
+
+Startup script:
+```bash
+docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
+```
 
 Requirement  | Specification  
 ------------ | -------------
@@ -259,33 +264,26 @@ OS | Ubuntu 18.04 LTS
 Disk | Custom Images > reat-image
 Size | 30 GB
 Networking | reat-vpc
-Startup script | see below
-
-Startup script:
-```bash
-docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
-```
+Startup script | see above
 
 Test the instance.
 
-16. Point your laptop's browser to the VM's public IP.
+16. Point a laptop browser to the VM's public IP.
 
-17. Sign in to the VNC desktop with password 'trainee!'.
+17. Sign in to VNC desktop with password 'trainee!'.
 
-18. In the VNC desktop, open the Chrome browser and point it to the following IPs for RL node admin consoles:
-Cluster north.redislabs.org:
+18. In VNC desktop, open the Chrome browser and point it to the RL admin consoles:
+North cluster:
 - n1 = 172.18.0.21
 - n2 = 172.18.0.22
 - n3 = 172.18.0.23
 
-Cluster south.redislabs.org:
+South cluster:
 - s1 = 172.18.0.31
 - s2 = 172.18.0.32
 - s3 = 172.18.0.33
 
-18. Open a command-line terminal from the 'Applications' drop-down (top-left).
-
-19. Run the following alias commands to restart RL nodes and create clusters:
+19. Open a command-line terminal from the 'Applications' drop-down (top-left) and run the following alias commands to restart nodes and create clusters:
 
 ```bash
 restart_north_nodes
