@@ -104,6 +104,7 @@ docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net redis
 # reset
 # rm -rf .ssh vnc_docker
 #
+mkdir .ssh
 ssh-keygen -q -t rsa -N '' -f .ssh/id_rsa 2>/dev/null <<< y >/dev/null
 cp -r .ssh/id_rsa.pub .ssh/authorized_keys 
 
@@ -134,18 +135,9 @@ USER 1000
 EOF
 ```
 
-10. Build the VNC Docker image.
+10. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were running on machines or VMs instead of containers.
 
 ```bash
-cd vnc_docker
-docker build -t re-vnc .
-```
-
-11. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were running on machines or VMs instead of containers.
-
-```bash
-cd ~
-
 cat << EOF > vnc_docker/bashrc
 source \$STARTUPDIR/generate_container_user
 alias ssh_node="ssh trainee@\$EX_IP"
@@ -233,6 +225,13 @@ chmod 755 scripts/restart_north_nodes.sh
 chmod 755 scripts/restart_south_nodes.sh
 chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
+```
+
+11. Build the VNC Docker image.
+
+```bash
+cd vnc_docker
+docker build -t re-vnc .
 ```
 
 12. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
