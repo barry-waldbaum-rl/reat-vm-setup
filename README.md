@@ -1,11 +1,11 @@
 # REAT VM Setup
 
-The goal is to setup one GCP VM that runs a local Docker network with:
-- VNC server for students to sign into
-- A DNS bind server for managing hostname lookups
-- 2 sets of 3 containers (each runs a Redis Enterprise node that students will start and group into 2 RES clusters).
+The goal: Setup a VM running Docker with:
+- A VNC server for students to sign into
+- A DNS bind server for managing hostnames
+- 2 sets of 3 Redis Lab nodes that appear to run as VMs.
 
-You are going to do the following:
+You do the following:
 - Build a GCP base VM with all the software and configuration
 - Take a snapshot of the base VM and an image of the snapshot
 - Create 1 or more VM instances from the image for students to use.
@@ -34,9 +34,9 @@ OS | Ubuntu 18.04 LTS
 Disk | 30 GB
 Networking | reat-vpc
   
-4. SSH to your base image VM using GCP console.
+4. SSH to your base VM from GCP console.
 
-5. Switch to 'root' user, install 'vi', and set up the 'trainee' user with password 'P@ssword' and the ability to run 'sudo'.
+5. Install 'vi', add the 'trainee' user, put the user in the 'docker' group, and grant the user the ability to run 'sudo'.
 
 ```bash 
 sudo su
@@ -49,7 +49,6 @@ update-alternatives --config editor
 # Add 'trainee' user to 'docker' group so it can start and stop containers that run Redis software
 adduser --disabled-password --gecos "" trainee
 groupadd docker
-usermod -aG docker $USER
 usermod -aG docker trainee
 
 # add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
@@ -95,7 +94,7 @@ docker network create --subnet=172.18.0.0/16 redislabs
 docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
-8. Generate keys for students to VNC to their VM instance's desktop and run a browser locally. The browser allows students to  access admin console for Redis Labs nodes running on the VM's Docker subnet using local IP addresses.
+8. Generate keys for students to VNC to their instance desktop and run a browser. Students use the browser to access admin consoles for their Redis Labs nodes. 
 
 ```bash
 #
@@ -109,7 +108,7 @@ mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
 ```
 
-9. Create the Dockerfile that will be used to add VNC software to the VM.
+9. Create the Dockerfile that will be used to build the VNC container.
 
 ```bash
 cat << EOF > ~/vnc_docker/Dockerfile
@@ -135,7 +134,7 @@ EOF
 10. Create a bashrc file that will run when a user signs into VNC. Aliases allow the user to start, stop, and ssh to nodes as if they were running on machines or VMs instead of containers (STARTUPDIR = /dockerstartup/ ).
 
 ```bash
-cat << EOF > ~/vnc_docker/bashrc
+cat << EOF > vnc_docker/bashrc
 source \$STARTUPDIR/generate_container_user
 alias ssh_node="ssh trainee@\$EX_IP"
 alias ssh_n1="ssh -t trainee@\$EX_IP docker exec -it n1 bash "
@@ -161,10 +160,10 @@ alias stop_s1="ssh -t trainee@\$EX_IP docker stop s1 "
 alias stop_s2="ssh -t trainee@\$EX_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$EX_IP docker stop s3 "
 
-alias reset_north_nodes="ssh -t trainee@\$EX_IP /home/trainee/scripts/reset_north_nodes.sh "
-alias reset_south_nodes="ssh -t trainee@\$EX_IP /home/trainee/scripts/reset_south_nodes.sh "
-alias create_north_cluster="ssh -t trainee@\$EX_IP /home/trainee/scripts/create_north_cluster.sh "
-alias create_south_cluster="ssh -t trainee@\$EX_IP /home/trainee/scripts/create_south_cluster.sh "
+alias reset_north_nodes="ssh -t trainee@\$EX_IP ./scripts/reset_north_nodes.sh "
+alias reset_south_nodes="ssh -t trainee@\$EX_IP ./scripts/reset_south_nodes.sh "
+alias create_north_cluster="ssh -t trainee@\$EX_IP ./scripts/create_north_cluster.sh "
+alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
 EOF
 ```
 
@@ -270,17 +269,17 @@ Startup script:
 docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
 ```
 
-NOTE: The startup script runs the VNC container which allows students to sign in to the VM desktop on port 80. 
+NOTE: Startup script runs the VNC container which allows students to sign in to the VM desktop on port 80. 
 
 17. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
 
-Now you are ready to test what a student would do with the instance.
+Now you are ready to test what students do with instances.
 
-18. You can VNC in to the VM instance like a student would by pointing a browser to the instance's public IP and signing in with the password 'trainee!'.
+18. Point a browser to the VM's public IP to VNC to the VM's desktop (use password 'trainee!').
 
-19. From the VNC desktop, you can continue as a student would by opening a terminal window from the 'Applications' drop-down (top-left). This signs you in as the 'default' user of the main VM.
+19. In VNC, open a terminal window from the 'Applications' drop-down (top-left). This signs you in as the 'default' user of the main VM.
 
-20. In the terminal window, run the following alias to sign in as the 'trainee' user. From there, you can run lab scripts on the VM that can reset Redis Lab nodes or create Redis Labs clusters in containers (called n1-n3 or s1-s3 on the local Docker network):
+20. In the terminal window, run the following alias to sign in as the 'trainee' user. From there, you can run lab scripts on the VM that can restart Redis Lab nodes and create Redis Labs clusters:
 
 ```bash
 ssh_node
@@ -288,11 +287,11 @@ ssh_node
 
 21. Open a browser and point it to one of the following Redis Labs nodes using their local IP addresses:
 Cluster: north.redislabs.org
-n1 = 172.18.0.21
-n2 = 172.18.0.22
-n3 = 172.18.0.23
+- n1 = 172.18.0.21
+- n2 = 172.18.0.22
+- n3 = 172.18.0.23
 
 Cluster: south.redislabs.org
-s1 = 172.18.0.31
-s2 = 172.18.0.32
-s3 = 172.18.0.33
+- s1 = 172.18.0.31
+- s2 = 172.18.0.32
+- s3 = 172.18.0.33
