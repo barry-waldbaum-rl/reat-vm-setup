@@ -7,6 +7,7 @@ Setup and test a VM running the following:
 - Redis Labs nodes that appear to run on VMs.
 
 Build the following:
+- VPC
 - Base VM
 - Snapshot
 - Image
