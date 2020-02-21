@@ -121,7 +121,7 @@ FROM consol/ubuntu-xfce-vnc
 USER 0
 
 ## Install a gedit
-RUN apt update; apt install -y ssh;
+RUN apt update; apt install -y ssh dnsutils;
 RUN mkdir /headless/.ssh
 COPY ./ssh /headless/.ssh
 RUN chown -R 1000 /headless/.ssh/
