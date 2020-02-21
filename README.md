@@ -260,36 +260,33 @@ Name | reat-instance
 CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
-Disk | from reat-image with 30 GB
+Disk | Custom Images > reat-image
+Size | 30 GB
 Networking | reat-vpc
+Startup script | <see below>
 
-XX. Run a Docker container from the Docker image that adds VNC software to the VM (VNC allows students to sign in to a VM instance desktop on port 80 using the VM's public IP address--which can be found in GCP console after the student's VM instance is startet--so they can configure cluster nodes and databases using an open port rather than port 8443).
-
+Startup script:
 ```bash
-#
-# You can uncomment and run the following commands before running the next command if you need to reset the base VM image
-# and create an updated snapshot
-#
-# docker stop vnc; docker rm vnc;
-#
 docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
 ```
 
-16. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
+NOTE: The startup script runs the VNC container which allows students to sign in to the VM desktop on port 80. 
+
+17. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
 
 Now you are ready to test what a student would do with the instance.
 
-17. You can VNC in to the VM instance like a student would by pointing a browser to the instance's public IP and signing in with the password 'trainee!'.
+18. You can VNC in to the VM instance like a student would by pointing a browser to the instance's public IP and signing in with the password 'trainee!'.
 
-18. From the VNC desktop, you can continue as a student would by opening a terminal window from the 'Applications' drop-down (top-left). This signs you in as the 'default' user of the main VM.
+19. From the VNC desktop, you can continue as a student would by opening a terminal window from the 'Applications' drop-down (top-left). This signs you in as the 'default' user of the main VM.
 
-19. In the terminal window, run the following alias to sign in as the 'trainee' user. From there, you can run lab scripts on the VM that can reset Redis Lab nodes or create Redis Labs clusters in containers (called n1-n3 or s1-s3 on the local Docker network):
+20. In the terminal window, run the following alias to sign in as the 'trainee' user. From there, you can run lab scripts on the VM that can reset Redis Lab nodes or create Redis Labs clusters in containers (called n1-n3 or s1-s3 on the local Docker network):
 
 ```bash
 ssh_node
 ```
 
-20. Open a browser and point it to one of the following Redis Labs nodes using their local IP addresses:
+21. Open a browser and point it to one of the following Redis Labs nodes using their local IP addresses:
 Cluster: north.redislabs.org
 n1 = 172.18.0.21
 n2 = 172.18.0.22
