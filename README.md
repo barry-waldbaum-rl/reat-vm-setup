@@ -3,12 +3,14 @@
 The goal: Setup a VM running Docker with:
 - A VNC server for students to sign into
 - A DNS bind server for managing hostnames
-- 2 sets of 3 Redis Lab nodes that appear to run as VMs.
+- 2 sets of 3 Redis Lab nodes that appear to run on VMs.
 
-You do the following:
-- Build a GCP base VM with all the software and configuration
-- Take a snapshot of the base VM and an image of the snapshot
-- Create 1 or more VM instances from the image for students to use.
+Do the following:
+- Build a base VM
+- Create a snapshot from the base
+- Create an image from the snapshot
+- Create a VM instance from the image for testing
+- Get the gcloud command to create instances for students.
 
 Steps:
 
