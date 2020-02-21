@@ -1,15 +1,16 @@
 # REAT VM Setup
 
-The goal: Setup a VM running Docker with:
-- A VNC server for students to sign into
-- A DNS bind server for managing hostnames
-- 2 sets of 3 Redis Lab nodes that appear to run on VMs.
+Setup and test a VM running the following:
+- Docker network
+- VNC server
+- DNS bind server
+- Redis Labs nodes that appear to run on VMs.
 
-Do the following:
-- Build a base VM
-- Create a snapshot from the base
-- Create an image from the snapshot
-- Create an test instance from the image.
+Build the following:
+- Base VM
+- Snapshot
+- Image
+- Test instance.
 
 Steps:
 
