@@ -263,7 +263,7 @@ OS | Ubuntu 18.04 LTS
 Disk | Custom Images > reat-image
 Size | 30 GB
 Networking | reat-vpc
-Startup script | <see below>
+Startup script | see below
 
 Startup script:
 ```bash
