@@ -175,21 +175,7 @@ cd ~/vnc_docker
 docker build -t re-vnc .
 ```
 
-12. Run a Docker container from the Docker image that adds VNC software to the VM (VNC allows students to sign in to a VM instance desktop on port 80 using the VM's public IP address--which can be found in GCP console after the student's VM instance is startet--so they can configure cluster nodes and databases using an open port rather than port 8443).
-
-```bash
-#
-# You can uncomment and run the following commands before running the next command if you need to reset the base VM image
-# and create an updated snapshot
-#
-# docker stop vnc; docker rm vnc;
-#
-docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
-```
-
-NOTE 1: Setting EX_IP in the base VM creates the problem of passing this container environment variable to new VM instances with different IPs. It will have to be corrected somehow like the comment in NOTE 2 below.
-
-13. Create scripts that a student can run to reset Redis Labs nodes and create clusters on their VM instance.
+12. Create scripts that a student can run to reset Redis Labs nodes and create clusters on their VM instance.
 
 ```bash
 cat << EOF > ~/scripts/reset_north_nodes.sh
@@ -249,16 +235,7 @@ chmod 755 ~/scripts/create_north_cluster.sh
 chmod 755 ~/scripts/create_south_cluster.sh
 ```
 
-14. add the following to user trainee's .bashrc 
-
-```bash
-# add the following aliases to trainee's .bashrc file
-alias ns="sudo docker run -it --net redislabs   -v /opt/redislabs/resolv.conf:/etc/resolv.conf   tutum/dnsutils bash"
-alias crl="sudo docker run -it --net redislabs   -v /opt/redislabs/resolv.conf:/etc/resolv.conf   tutum/curl bash"
-alias redis="sudo docker run -v /opt/redislabs/resolv.conf:/etc/resolv.conf -v /home/trainee/redis:/data --net redislabs  -it redis bash "
-```
-
-15. update trainee's .bashrc file to use the following lines so VM shell prompt color (cyan@green:/blue$) stands out from container shell color and students can keep track of which system they're signed into (they shift between VM and RES containers):
+12. update trainee's .bashrc file to use the following lines so VM shell prompt color (cyan@green:/blue$) stands out from container shell color and students can keep track of which system they're signed into (they shift between VM and RES containers):
 ```
 # colors are: green=32, yellow=33, blue=34, pink=35, cyan=36
 # look for '36m..\u', '32m..\h', ':\..34m' 
@@ -269,13 +246,13 @@ if [ "$color_prompt" = yes ]; then
 
 Now you are finished creating your base VM that will be used by students.
 
-16. Take a GCP snapshot of the running base VM called 'reat-snap'.
+13. Take a GCP snapshot of the running base VM called 'reat-snap'.
 
-17. Create a GCP image called 'reat-image' from the snapshot.
+14. Create a GCP image called 'reat-image' from the snapshot.
 
 Now you are ready to create new instances for students.
 
-18. Go to GCP > VM instances, create a new VM instance from 'reat-image' with the following:
+15. Go to GCP > VM instances, create a new VM instance from 'reat-image' with the following:
 
 Requirement  | Specification  
 ------------ | -------------
@@ -286,32 +263,33 @@ OS | Ubuntu 18.04 LTS
 Disk | from reat-image with 30 GB
 Networking | reat-vpc
 
-19. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
-
-NOTE 2: Somewhere we will have to do something equivalent to running the following on the new VM instance to correct for NOTE 1 above:
+XX. Run a Docker container from the Docker image that adds VNC software to the VM (VNC allows students to sign in to a VM instance desktop on port 80 using the VM's public IP address--which can be found in GCP console after the student's VM instance is startet--so they can configure cluster nodes and databases using an open port rather than port 8443).
 
 ```bash
-> sudo docker exec -it vnc bash -c "export EX_IP=172.18.0.19"
+#
+# You can uncomment and run the following commands before running the next command if you need to reset the base VM image
+# and create an updated snapshot
+#
+# docker stop vnc; docker rm vnc;
+#
+docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
 ```
 
-HOWEVER: The above doesn't stick in the container, just the bash shell. So you might need to edit the container config file in:
-```bash
-/var/lib/docker/containers/<container-id>/config.json.
-```
+16. You can go to the bottom of VM creation page and click ‘command line’ to get the gcloud command to create an image that’s scriptable for a class of many.
 
 Now you are ready to test what a student would do with the instance.
 
-20. You can VNC in to the VM instance like a student would by pointing a browser to the instance's public IP and signing in with the password 'trainee!'.
+17. You can VNC in to the VM instance like a student would by pointing a browser to the instance's public IP and signing in with the password 'trainee!'.
 
-21. From the VNC desktop, you can continue as a student would by opening a terminal window from the 'Applications' drop-down (top-left). This signs you in as the 'default' user of the main VM.
+18. From the VNC desktop, you can continue as a student would by opening a terminal window from the 'Applications' drop-down (top-left). This signs you in as the 'default' user of the main VM.
 
-22. In the terminal window, run the following alias to sign in as the 'trainee' user. From there, you can run lab scripts on the VM that can reset Redis Lab nodes or create Redis Labs clusters in containers (called n1-n3 or s1-s3 on the local Docker network):
+19. In the terminal window, run the following alias to sign in as the 'trainee' user. From there, you can run lab scripts on the VM that can reset Redis Lab nodes or create Redis Labs clusters in containers (called n1-n3 or s1-s3 on the local Docker network):
 
 ```bash
 ssh_node
 ```
 
-23. Open a browser and point it to one of the following Redis Labs nodes using their local IP addresses:
+20. Open a browser and point it to one of the following Redis Labs nodes using their local IP addresses:
 Cluster: north.redislabs.org
 n1 = 172.18.0.21
 n2 = 172.18.0.22
