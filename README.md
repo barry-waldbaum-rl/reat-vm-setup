@@ -1,13 +1,14 @@
 # REAT VM Setup
 
-Setup and test a VM running the following:
+Setup and test a VM running:
 - Docker network
 - VNC server
-- DNS bind server
-- Redis Labs nodes that appear to run on VMs.
+- DNS server
+- 6 Redis Labs nodes that appear to run on separate machines.
+
+Nodes are grouped in 2 clusters (north and south). Each runs in its own container. Node containers are attached to the Docker network on the VM. Students use a VNC container to get a VM desktop. Students open a browser on their VM desktop to view RL admin consoles and a terminal to run rladmin commands.
 
 Build the following:
-- VPC
 - Base VM
 - Snapshot
 - Image
