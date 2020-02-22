@@ -292,31 +292,28 @@ Test the instance.
 
 19. Sign in to VNC desktop with password 'trainee!'.
 
-20. In VNC desktop, open the Chrome browser and point it to the RL admin consoles:
-North cluster:
-- n1 = 172.18.0.21
-- n2 = 172.18.0.22
-- n3 = 172.18.0.23
+20. In VNC desktop, open Chrome browser and point it to RL admin consoles:
 
-South cluster:
-- s1 = 172.18.0.31
-- s2 = 172.18.0.32
-- s3 = 172.18.0.33
+```bash
+<host>:8443 or <ip>:8443
 
-21. Open a command-line terminal from the 'Applications' drop-down (top-left) and run the following alias commands to restart nodes and create clusters:
+n1 = 172.18.0.21
+n2 = 172.18.0.22
+n3 = 172.18.0.23
+
+s1 = 172.18.0.31
+s2 = 172.18.0.32
+s3 = 172.18.0.33
+
+21. Open Applications > Terminal (top-left) and run commands to restart nodes, create clusters, SSH to the VM, or SSH to nodes.
 
 ```bash
 restart_north_nodes
 restart_south_nodes
 create_north_cluster
 create_south_cluster
-```
-
-22. Run the following alias commands to SSH to various destinations:
-
-```bash
-ssh_node (this gets you to the main VM instance as the 'trainee' user for the installation lab)
-ssh_n1 (these get you to the RL nodes where you can run 'rladmin' commands to view clsuter state)
+ssh_node
+ssh_n1
 ssh_n2
 ssh_n3
 ```
