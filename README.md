@@ -37,7 +37,7 @@ OS | Ubuntu 18.04 LTS
 Disk | 30 GB
 Networking | reat-vpc
   
-4. SSH to the base VM from GCP to finish setup.
+4. SSH to the base VM from GCP console to finish setup.
 
 5. Install 'vi', add 'trainee' user, put the user in the 'docker' group, and grant the user the ability to run 'sudo' (for RES install lab).
 
@@ -97,7 +97,7 @@ docker network create --subnet=172.18.0.0/16 redislabs
 docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
-8. Create keys so students can silently SSH from the VNC container to the base VM and run commands on RL nodes as if they were running on machines or VMs instead of containers. 
+8. Generate keys so students can SSH from VNC container to base VM and run RL nodes as if they were on machines instead of containers. 
 
 ```bash
 #
@@ -112,7 +112,7 @@ mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
 ```
 
-9. Create the Dockerfile that will build the VNC Docker image.
+9. Create Dockerfile that will be used to build the VNC Docker image.
 
 ```bash
 cat << EOF > vnc_docker/Dockerfile
@@ -135,7 +135,7 @@ USER 1000
 EOF
 ```
 
-10. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were running on machines or VMs instead of containers.
+10. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers.
 
 ```bash
 cat << EOF > vnc_docker/bashrc
@@ -171,6 +171,7 @@ alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluste
 EOF
 
 mkdir scripts
+
 cat << EOF > scripts/restart_north_nodes.sh
 docker kill n1; docker rm n1;
 docker kill n2; docker rm n2;
@@ -228,14 +229,28 @@ chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
 ```
 
-11. Build the VNC Docker image.
+11. Run scripts that start Redis Labs nodes running in their containers (3 north, 3 south).
+
+```bash
+scripts/restart_north_nodes.sh
+scripts/restart_south_nodes.sh
+```
+
+12. Run scripts that build Redis Labs clusters from their nodes.
+
+```bash
+scripts/create_north_cluster.sh
+scripts/create_south_cluster.sh
+```
+
+13. Build the VNC Docker image that you will run when student instances are created.
 
 ```bash
 cd vnc_docker
 docker build -t re-vnc .
 ```
 
-12. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
+14. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
 ```
 # colors are: green=32, yellow=33, blue=34, pink=35, cyan=36
 # look for '36m..\u', '32m..\h', ':\..34m' 
@@ -246,11 +261,11 @@ if [ "$color_prompt" = yes ]; then
 
 You're finished creating the base VM.
 
-13. Create a snapshot from the base VM called 'reat-snap'.
+15. Create a snapshot from the base VM called 'reat-snap'.
 
-14. Create an image from the snapshot called 'reat-image'.
+16. Create an image from the snapshot called 'reat-image'.
 
-15. Create a test instance from the image. The startup script runs the VNC container and passes in the VM instance's private IP so students can SSH from the VNC container to the base image.
+17. Create a test instance from the image. The startup script runs the VNC container and passes in the VM instance's private IP so students can SSH from the VNC container to the base image.
 
 Startup script:
 ```bash
@@ -270,11 +285,11 @@ Startup script | see above
 
 Test the instance.
 
-16. Point a laptop browser to the VM's public IP.
+18. Point a laptop browser to the VM's public IP.
 
-17. Sign in to VNC desktop with password 'trainee!'.
+19. Sign in to VNC desktop with password 'trainee!'.
 
-18. In VNC desktop, open the Chrome browser and point it to the RL admin consoles:
+20. In VNC desktop, open the Chrome browser and point it to the RL admin consoles:
 North cluster:
 - n1 = 172.18.0.21
 - n2 = 172.18.0.22
@@ -285,7 +300,7 @@ South cluster:
 - s2 = 172.18.0.32
 - s3 = 172.18.0.33
 
-19. Open a command-line terminal from the 'Applications' drop-down (top-left) and run the following alias commands to restart nodes and create clusters:
+21. Open a command-line terminal from the 'Applications' drop-down (top-left) and run the following alias commands to restart nodes and create clusters:
 
 ```bash
 restart_north_nodes
@@ -294,7 +309,7 @@ create_north_cluster
 create_south_cluster
 ```
 
-20. Run the following alias commands to SSH to various destinations:
+22. Run the following alias commands to SSH to various destinations:
 
 ```bash
 ssh_node (this gets you to the main VM instance as the 'trainee' user for the installation lab)
