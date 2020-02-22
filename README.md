@@ -304,6 +304,7 @@ n3 = 172.18.0.23
 s1 = 172.18.0.31
 s2 = 172.18.0.32
 s3 = 172.18.0.33
+```
 
 21. Open Applications > Terminal (top-left) and run commands to restart nodes, create clusters, SSH to the VM, or SSH to nodes.
 
