@@ -6,7 +6,7 @@ Setup and test a VM running:
 - DNS server
 - 6 Redis Labs nodes that appear to run on separate machines.
 
-Nodes are grouped in 2 clusters (north and south). Each runs in its own container. Node containers are attached to the Docker network on the VM. Students use a VNC container to get a VM desktop. Students open a browser on their VM desktop to view RL admin consoles and a terminal to run rladmin commands.
+Each student gets 6 nodes grouped in 2 clusters (north and south). Each node runs in its own container but we make each container appear as a VM with its own IP. Containers are attached to the Docker network on the VM. Students get a VNC desktop to the VM so they can open a browser to view node admin consoles and a terminal to SSH to nodes and run rladmin commands.
 
 Build the following:
 - Base VM
