@@ -183,6 +183,7 @@ docker run -d --cap-add=ALL --name n3 -v /home/trainee/resolve/resolv.conf:/etc/
 docker exec --user root n1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
+sleep 60
 EOF
 
 cat << EOF > scripts/restart_south_nodes.sh
@@ -195,6 +196,7 @@ docker run -d --cap-add=ALL --name s3 -v /home/trainee/resolve/resolv.conf:/etc/
 docker exec --user root s1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
+sleep 60
 EOF
 
 cat << EOF > scripts/create_north_cluster.sh
