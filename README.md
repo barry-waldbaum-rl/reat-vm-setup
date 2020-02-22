@@ -87,7 +87,7 @@ apt-get -y install docker-ce
 sudo su - trainee
 ```
 
-7. Create the Docker subnet and add the DNS bind server to it.
+8. Create the Docker subnet and add the DNS bind server to it.
 
 ```bash
 mkdir resolve
@@ -98,7 +98,7 @@ docker network create --subnet=172.18.0.0/16 redislabs
 docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
-8. Generate keys so students can SSH from VNC container to base VM and run RL nodes as if they were on machines instead of containers. 
+9. Generate keys so students can SSH from VNC container to base VM and run RL nodes as if they were on machines instead of containers. 
 
 ```bash
 #
@@ -113,7 +113,7 @@ mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
 ```
 
-9. Create Dockerfile that will be used to build the VNC Docker image.
+10. Create Dockerfile that will be used to build the VNC Docker image on the base VM (you will not run the VNC container on the base VM, only student instances because it needs to pass in the instance's private IP).
 
 ```bash
 cat << EOF > vnc_docker/Dockerfile
@@ -136,7 +136,7 @@ USER 1000
 EOF
 ```
 
-10. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers.
+11. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers.
 
 ```bash
 cat << EOF > vnc_docker/bashrc
@@ -232,28 +232,28 @@ chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
 ```
 
-11. Run scripts that start Redis Labs nodes running in their containers (3 north, 3 south).
+12. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
 
 ```bash
 scripts/restart_north_nodes.sh
 scripts/restart_south_nodes.sh
 ```
 
-12. Run scripts that build Redis Labs clusters from their nodes.
+13. Run scripts to build Redis Labs clusters from their nodes.
 
 ```bash
 scripts/create_north_cluster.sh
 scripts/create_south_cluster.sh
 ```
 
-13. Build the VNC Docker image that you will run when student instances are created.
+14. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
 
 ```bash
 cd vnc_docker
 docker build -t re-vnc .
 ```
 
-14. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
+15. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
 ```
 # colors are: green=32, yellow=33, blue=34, pink=35, cyan=36
 # look for '36m..\u', '32m..\h', ':\..34m' 
@@ -264,13 +264,12 @@ if [ "$color_prompt" = yes ]; then
 
 You're finished creating the base VM.
 
-15. Create a snapshot from the base VM called 'reat-snap'.
+16. Create a snapshot from the VM called 'reat-snap'.
 
-16. Create an image from the snapshot called 'reat-image'.
+17. Create an image from the snapshot called 'reat-image'.
 
-17. Create a test instance from the image. The startup script runs the VNC container and passes in the VM instance's private IP so students can SSH from the VNC container to the base image.
+18. Create a test instance from the image. The startup script below runs the VNC container and passes in the instance IP.
 
-Startup script:
 ```bash
 docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
 ```
@@ -280,23 +279,20 @@ Requirement  | Specification
 Name | reat-instance
 CPU | 4
 Memory | 15 GB
-OS | Ubuntu 18.04 LTS
-Disk | Custom Images > reat-image
-Size | 30 GB
-Networking | reat-vpc
+Boot disk | reat-image
+Disk size | 30 GB
+Network | reat-vpc
 Startup script | see above
 
 Test the instance.
 
-18. Point a laptop browser to the VM's public IP.
+19. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
 
-19. Sign in to VNC desktop with password 'trainee!'.
+20. Sign in to VNC desktop with password 'trainee!'.
 
-20. In VNC desktop, open Chrome browser and point it to RL admin consoles:
+21. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
 
 ```bash
-<host>:8443 or <ip>:8443
-
 n1 = 172.18.0.21
 n2 = 172.18.0.22
 n3 = 172.18.0.23
@@ -306,15 +302,22 @@ s2 = 172.18.0.32
 s3 = 172.18.0.33
 ```
 
-21. Open Applications > Terminal (top-left) and run commands to restart nodes, create clusters, SSH to the VM, or SSH to nodes.
+22. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
 
 ```bash
+# restart RL nodes
 restart_north_nodes
 restart_south_nodes
+
+# create RL clusters
 create_north_cluster
 create_south_cluster
-ssh_node
+
+# SSH to RL nodes so you can run rladmin
 ssh_n1
 ssh_n2
 ssh_n3
+
+# SSH to the main VM
+ssh_node
 ```
