@@ -183,7 +183,7 @@ EOF
 
 mkdir scripts
 
-cat << EOF > scripts/restart_north_nodes.sh
+cat << EOF > scripts/start_north_nodes.sh
 docker kill n1; docker rm n1;
 docker kill n2; docker rm n2;
 docker kill n3; docker rm n3;
@@ -196,7 +196,7 @@ docker exec --user root n3 bash -c "iptables -t nat -I PREROUTING -p udp --dport
 sleep 60
 EOF
 
-cat << EOF > scripts/restart_south_nodes.sh
+cat << EOF > scripts/start_south_nodes.sh
 docker kill s1; docker rm s1;
 docker kill s2; docker rm s2;
 docker kill s3; docker rm s3;
