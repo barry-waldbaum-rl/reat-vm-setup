@@ -86,7 +86,7 @@ apt-get -y install docker-ce
 ```bash
 sudo su - trainee
 ```
-8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so trainee user's prompt is green and distinguishable from the VNC default user (yellow) and Redis Labs node users (red or white).
+8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so trainee user's prompt is green and distinguishable from VNC user (yellow) and RL node admins (red or white).
 
 9. Create the Docker subnet and add the DNS bind server to it.
 
@@ -139,7 +139,7 @@ EOF
 
 12. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers as well as run and remove a Redis server container for running redis-server and redis-cli in lab 2.
 
-NOTE: The VNC user's prompt color (set as 'PS1') will be set to yellow to distinguish it from the VM trainee user (green) and Redis Labs node users (red or white).
+NOTE: VNC user prompt will be set to yellow to distinguish it from VM user 'trainee' (green) and RL node admins (red or white).
 
 ```bash
 cat << EOF > vnc_docker/bashrc
