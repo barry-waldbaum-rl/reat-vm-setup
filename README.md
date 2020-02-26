@@ -253,6 +253,9 @@ scripts/start_south_nodes.sh
 
 ```bash
 scripts/create_north_cluster.sh
+```
+
+```bash
 scripts/create_south_cluster.sh
 ```
 
