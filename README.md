@@ -136,7 +136,7 @@ USER 1000
 EOF
 ```
 
-11. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers as well as start and stop an open source Redis container for running redis-server and redis-cli in lab 2.
+11. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers as well as run and remove an open source Redis container for running redis-server and redis-cli in lab 2.
 
 ```bash
 cat << EOF > vnc_docker/bashrc
