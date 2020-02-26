@@ -141,6 +141,8 @@ EOF
 ```bash
 cat << EOF > vnc_docker/bashrc
 source \$STARTUPDIR/generate_container_user
+export PS1='\e[1;32m\u\e[m@\e[1;32m\h\e[m:\e[1;32m\w\e[m\$ '
+
 alias ssh_vm="ssh trainee@\$EX_IP"
 
 alias run_redis='ssh -t trainee@\$EX_IP docker run -it --name redis -h redis -w / redis bash'
