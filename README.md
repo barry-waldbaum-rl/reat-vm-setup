@@ -1,6 +1,6 @@
 # REAT VM Setup
 
-![Alt text](/images/test.jpg?raw=true "Optional Title")
+![vnc ip](/images/01 - vnc ip.png?raw=true "VNC IP")
 
 Setup and test a base VM that runs:
 - Docker network
