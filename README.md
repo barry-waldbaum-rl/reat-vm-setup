@@ -1,7 +1,5 @@
 # REAT VM Setup
 
-![vnc ip](/images/01 - vnc ip.png?raw=true "VNC IP")
-
 Setup and test a base VM that runs:
 - Docker network
 - VNC
@@ -300,10 +298,6 @@ Boot disk | reat-image
 Disk size | 30 GB
 Network | reat-vpc
 Startup script | see above
-
-<span style="color:red">
-Test the instance.
-</span>
 
 20. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
 
