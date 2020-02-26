@@ -299,7 +299,9 @@ Disk size | 30 GB
 Network | reat-vpc
 Startup script | see above
 
+<span style="color:red">
 Test the instance.
+</span>
 
 20. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
 
