@@ -328,15 +328,12 @@ create_south_cluster
 
 # SSH to RL nodes so you can run rladmin
 ssh_n1
-exit
+rlcheck
 rladmin
+exit
 ssh_n2
 exit
 ssh_n3
-exit
-
-# SSH to the main VM
-ssh_install
 exit
 
 # start, test, and stop OSS Redis container
@@ -348,4 +345,13 @@ start_redis
 127.0.0.1:6379> exit
 exit
 stop_redis
+
+# SSH to the main VM as user 'trainee' with sudo/root permissions
+ssh_install
+sudo docker images
+sudo docker ps
+sudo docker network list
+sudo docker network inspect redislabs
+sudo docker image inspect redislabs/redis
+exit
 ```
