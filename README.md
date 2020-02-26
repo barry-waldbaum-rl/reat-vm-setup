@@ -147,10 +147,10 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-alias ssh_vm="ssh trainee@\$EX_IP"
+alias ssh_install="ssh trainee@\$EX_IP"
 
-alias run_redis='ssh -t trainee@\$EX_IP docker run -it --name redis -h redis -w / redis bash'
-alias rm_redis='ssh -t trainee@\$EX_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
+alias start_redis='ssh -t trainee@\$EX_IP docker run -it --name redis -h redis -w / redis bash'
+alias stop_redis='ssh -t trainee@\$EX_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
 
 alias ssh_n1="ssh -t trainee@\$EX_IP docker exec -it n1 bash "
 alias ssh_n2="ssh -t trainee@\$EX_IP docker exec -it n2 bash "
@@ -175,8 +175,8 @@ alias stop_s1="ssh -t trainee@\$EX_IP docker stop s1 "
 alias stop_s2="ssh -t trainee@\$EX_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$EX_IP docker stop s3 "
 
-alias restart_north_nodes="ssh -t trainee@\$EX_IP ./scripts/restart_north_nodes.sh "
-alias restart_south_nodes="ssh -t trainee@\$EX_IP ./scripts/restart_south_nodes.sh "
+alias start_north_nodes="ssh -t trainee@\$EX_IP ./scripts/restart_north_nodes.sh "
+alias start_south_nodes="ssh -t trainee@\$EX_IP ./scripts/restart_south_nodes.sh "
 alias create_north_cluster="ssh -t trainee@\$EX_IP ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
 EOF
@@ -318,8 +318,8 @@ s3 = 172.18.0.33
 
 ```bash
 # restart RL nodes
-restart_north_nodes
-restart_south_nodes
+start_north_nodes
+start_south_nodes
 
 # create RL clusters
 create_north_cluster
@@ -327,9 +327,24 @@ create_south_cluster
 
 # SSH to RL nodes so you can run rladmin
 ssh_n1
+exit
+rladmin
 ssh_n2
+exit
 ssh_n3
+exit
 
 # SSH to the main VM
-ssh_node
+ssh_install
+exit
+
+# start, test, and stop OSS Redis container
+start_redis
+> redis-server &
+> redis-cli
+127.0.0.1:6379> keys *
+(empty list)
+127.0.0.1:6379> exit
+exit
+stop_redis
 ```
