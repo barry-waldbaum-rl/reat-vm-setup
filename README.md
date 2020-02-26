@@ -86,8 +86,9 @@ apt-get -y install docker-ce
 ```bash
 sudo su - trainee
 ```
+8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so trainee user's prompt is green and distinguishable from the VNC default user (yellow) and Redis Labs node users (red or white).
 
-8. Create the Docker subnet and add the DNS bind server to it.
+9. Create the Docker subnet and add the DNS bind server to it.
 
 ```bash
 mkdir resolve
@@ -98,7 +99,7 @@ docker network create --subnet=172.18.0.0/16 redislabs
 docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
-9. Generate keys so students can SSH from VNC container to base VM and run RL nodes as if they were on machines instead of containers. 
+10. Generate keys so students can SSH from VNC container to base VM and run RL nodes as if they were on machines instead of containers. 
 
 ```bash
 #
@@ -113,7 +114,7 @@ mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
 ```
 
-10. Create Dockerfile that will be used to build the VNC Docker image on the base VM (you will not run the VNC container on the base VM, only student instances because it needs to pass in the instance's private IP).
+11. Create Dockerfile that will be used to build the VNC Docker image on the base VM (you will not run the VNC container on the base VM, only student instances because it needs to pass in the instance's private IP).
 
 ```bash
 cat << EOF > vnc_docker/Dockerfile
@@ -136,12 +137,15 @@ USER 1000
 EOF
 ```
 
-11. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers as well as run and remove an open source Redis container for running redis-server and redis-cli in lab 2.
+12. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers as well as run and remove a Redis server container for running redis-server and redis-cli in lab 2.
+
+NOTE: The VNC user's prompt color (set as 'PS1') will be set to yellow to distinguish it from the VM trainee user (green) and Redis Labs node users (red or white).
 
 ```bash
 cat << EOF > vnc_docker/bashrc
 source \$STARTUPDIR/generate_container_user
-export PS1='\e[1;32m\u\e[m@\e[1;32m\h\e[m:\e[1;32m\w\e[m\$ '
+
+export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
 alias ssh_vm="ssh trainee@\$EX_IP"
 
@@ -238,28 +242,28 @@ chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
 ```
 
-12. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
+13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
 
 ```bash
 scripts/restart_north_nodes.sh
 scripts/restart_south_nodes.sh
 ```
 
-13. Run scripts to build Redis Labs clusters from their nodes.
+14. Run scripts to build Redis Labs clusters from their nodes.
 
 ```bash
 scripts/create_north_cluster.sh
 scripts/create_south_cluster.sh
 ```
 
-14. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
+15. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
 
 ```bash
 cd vnc_docker
 docker build -t re-vnc .
 ```
 
-15. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
+16. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
 ```
 # colors are: green=32, yellow=33, blue=34, pink=35, cyan=36
 # look for '36m..\u', '32m..\h', ':\..34m' 
@@ -270,11 +274,13 @@ if [ "$color_prompt" = yes ]; then
 
 You're finished creating the base VM.
 
-16. Create a snapshot from the VM called 'reat-snap'.
+17. Create a snapshot from the VM called 'reat-snap'.
 
-17. Create an image from the snapshot called 'reat-image'.
+18. Create an image from the snapshot called 'reat-image'.
 
-18. Create a test instance from the image. The startup script below runs the VNC container and passes in the instance IP.
+19. Create a test instance from the image.
+
+NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
 ```bash
 docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -d re-vnc;
@@ -292,11 +298,11 @@ Startup script | see above
 
 Test the instance.
 
-19. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+20. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
 
-20. Sign in to VNC desktop with password 'trainee!'.
+21. Sign in to VNC desktop with password 'trainee!'.
 
-21. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
+22. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
 
 ```bash
 n1 = 172.18.0.21
@@ -308,7 +314,7 @@ s2 = 172.18.0.32
 s3 = 172.18.0.33
 ```
 
-22. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
+23. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
 
 ```bash
 # restart RL nodes
