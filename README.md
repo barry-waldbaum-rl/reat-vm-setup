@@ -99,7 +99,7 @@ docker network create --subnet=172.18.0.0/16 redislabs
 docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net redislabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
-10. Generate keys so students can SSH from VNC container to base VM and run RL nodes as if they were on machines instead of containers. 
+10. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
 
 ```bash
 #
@@ -114,7 +114,7 @@ mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
 ```
 
-11. Create Dockerfile that will be used to build the VNC Docker image on the base VM (you will not run the VNC container on the base VM, only student instances because it needs to pass in the instance's private IP).
+11. Create Dockerfile that will be used to build the VNC Docker image on the base VM (you only run VNC container in student instance startup scripts because the container needs to receive the instance's private IP to append to SSH alias commands).
 
 ```bash
 cat << EOF > vnc_docker/Dockerfile
@@ -175,8 +175,8 @@ alias stop_s1="ssh -t trainee@\$EX_IP docker stop s1 "
 alias stop_s2="ssh -t trainee@\$EX_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$EX_IP docker stop s3 "
 
-alias start_north_nodes="ssh -t trainee@\$EX_IP ./scripts/restart_north_nodes.sh "
-alias start_south_nodes="ssh -t trainee@\$EX_IP ./scripts/restart_south_nodes.sh "
+alias start_north_nodes="ssh -t trainee@\$EX_IP ./scripts/start_north_nodes.sh "
+alias start_south_nodes="ssh -t trainee@\$EX_IP ./scripts/start_south_nodes.sh "
 alias create_north_cluster="ssh -t trainee@\$EX_IP ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
 EOF
@@ -236,8 +236,8 @@ sudo docker exec -it s3 bash -c "/opt/redislabs/bin/rladmin cluster join persist
 EOF
 
 # make the scripts executable
-chmod 755 scripts/restart_north_nodes.sh
-chmod 755 scripts/restart_south_nodes.sh
+chmod 755 scripts/start_north_nodes.sh
+chmod 755 scripts/start_south_nodes.sh
 chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
 ```
@@ -245,8 +245,8 @@ chmod 755 scripts/create_south_cluster.sh
 13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
 
 ```bash
-scripts/restart_north_nodes.sh
-scripts/restart_south_nodes.sh
+scripts/start_north_nodes.sh
+scripts/start_south_nodes.sh
 ```
 
 14. Run scripts to build Redis Labs clusters from their nodes.
