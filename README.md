@@ -143,8 +143,8 @@ cat << EOF > vnc_docker/bashrc
 source \$STARTUPDIR/generate_container_user
 alias ssh_vm="ssh trainee@\$EX_IP"
 
-alias start_redis='ssh -t trainee@\$EX_IP docker run -it --name redis -h redis -w / redis bash'
-alias stop_redis='ssh -t trainee@\$EX_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
+alias run_redis='ssh -t trainee@\$EX_IP docker run -it --name redis -h redis -w / redis bash'
+alias rm_redis='ssh -t trainee@\$EX_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
 
 alias ssh_n1="ssh -t trainee@\$EX_IP docker exec -it n1 bash "
 alias ssh_n2="ssh -t trainee@\$EX_IP docker exec -it n2 bash "
