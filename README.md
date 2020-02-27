@@ -266,27 +266,18 @@ cd vnc_docker
 docker build -t re-vnc .
 ```
 
-16. Add color prompts to RL nodes so students know where they are (cyan@green:/blue$).
-```
-# colors are: green=32, yellow=33, blue=34, pink=35, cyan=36
-# look for '36m..\u', '32m..\h', ':\..34m' 
-if [ "$color_prompt" = yes ]; then
-   PS1='${debian_chroot:+($debian_chroot)}\[\033[01;36m\]\u\[\033[00m\]@\[\033[01;32m\]\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-   #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-```
-
 You're finished creating the base VM.
 
-17. Create a snapshot from the VM called 'reat-snap'.
+16. Create a snapshot from the VM called 'reat-snap'.
 
-18. Create an image from the snapshot called 'reat-image'.
+17. Create an image from the snapshot called 'reat-image'.
 
-19. Create a test instance from the image.
+18. Create a test instance from the image.
 
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
 ```bash
-docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -h vnc -d re-vnc;
+docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` --restart=always -p 80:6901 -e VNC_PW=trainee! --net redislabs --ip 172.18.0.2  --name vnc -h vnc -d re-vnc;
 ```
 
 Requirement  | Specification  
@@ -299,11 +290,11 @@ Disk size | 30 GB
 Network | reat-vpc
 Startup script | see above
 
-20. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+19. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
 
-21. Sign in to VNC desktop with password 'trainee!'.
+20. Sign in to VNC desktop with password 'trainee!'.
 
-22. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
+21. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
 
 ```bash
 n1 = 172.18.0.21
@@ -315,7 +306,7 @@ s2 = 172.18.0.32
 s3 = 172.18.0.33
 ```
 
-23. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
+22. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
 
 ```bash
 # restart RL nodes
