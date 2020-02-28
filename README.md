@@ -153,7 +153,7 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-alias ssh_install="ssh trainee@\$EX_IP"
+alias ssh_singlenode="ssh trainee@\$EX_IP"
 
 alias start_redis='ssh -t trainee@\$EX_IP docker run -it --name redis -h redis -w / redis bash'
 alias stop_redis='ssh -t trainee@\$EX_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
@@ -344,7 +344,7 @@ exit
 stop_redis
 
 # SSH to the main VM as user 'trainee' with sudo/root permissions
-ssh_install
+ssh_singlenode
 sudo docker images
 sudo docker ps
 sudo docker network list
