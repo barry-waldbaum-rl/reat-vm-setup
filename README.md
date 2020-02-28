@@ -54,7 +54,9 @@ update-alternatives --config editor
 adduser --disabled-password --gecos "" trainee
 groupadd docker
 usermod -aG docker trainee
+```
 
+```bash
 # add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
 trainee ALL=(ALL) NOPASSWD:ALL
 ```
@@ -66,8 +68,12 @@ apt-get install \
     apt-transport-https \
     ca-certificates \
     curl \
-    software-properties-common
-    
+    software-properties-common 
+```
+
+and enter 'Y'.
+
+```bash
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
 apt-key fingerprint 0EBFCD88
