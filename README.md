@@ -288,7 +288,7 @@ docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{
 
 Requirement  | Specification  
 ------------ | -------------
-Name | install-01
+Name | singlenode-01
 CPU | 4
 Memory | 15 GB
 Boot disk | reat-image
