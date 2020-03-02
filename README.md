@@ -278,7 +278,7 @@ You're finished creating the base VM.
 
 17. Create an image from the snapshot called 'reat-image'.
 
-18. Create a test instance from the image.
+18. Create a test instance from the image defined by the specs below which include a startup script.
 
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
