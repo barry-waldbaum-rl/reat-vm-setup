@@ -102,7 +102,7 @@ echo 'nameserver 172.18.0.20' > resolve/resolv.conf
 
 docker network create --subnet=172.18.0.0/16 reatlabs
 
-docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  -h ns.reatlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
+docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  -h ns.reatlabs.org --net reatlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
 10. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
