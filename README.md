@@ -100,9 +100,9 @@ sudo su - trainee
 mkdir resolve
 echo 'nameserver 172.18.0.20' > resolve/resolv.conf
 
-docker network create --subnet=172.18.0.0/16 rlabs
+docker network create --subnet=172.18.0.0/16 reatlabs
 
-docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
+docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  -h ns.reatlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 ```
 
 10. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
@@ -193,9 +193,9 @@ cat << EOF > scripts/start_north_nodes.sh
 docker kill n1; docker rm n1;
 docker kill n2; docker rm n2;
 docker kill n3; docker rm n3;
-docker run -d --cap-add=ALL --name n1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n1.rlabs.io --net rlabs --ip 172.18.0.21 redislabs/redis
-docker run -d --cap-add=ALL --name n2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n2.rlabs.io --net rlabs --ip 172.18.0.22 redislabs/redis
-docker run -d --cap-add=ALL --name n3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n3.rlabs.io --net rlabs --ip 172.18.0.23 redislabs/redis
+docker run -d --cap-add=ALL --name n1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n1.reatlabs.org --net reatlabs --ip 172.18.0.21 redislabs/redis
+docker run -d --cap-add=ALL --name n2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n2.reatlabs.org --net reatlabs --ip 172.18.0.22 redislabs/redis
+docker run -d --cap-add=ALL --name n3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n3.reatlabs.org --net reatlabs --ip 172.18.0.23 redislabs/redis
 docker exec --user root n1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -206,9 +206,9 @@ cat << EOF > scripts/start_south_nodes.sh
 docker kill s1; docker rm s1;
 docker kill s2; docker rm s2;
 docker kill s3; docker rm s3;
-docker run -d --cap-add=ALL --name s1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s1.rlabs.io --net rlabs --ip 172.18.0.31 redislabs/redis
-docker run -d --cap-add=ALL --name s2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s2.rlabs.io --net rlabs --ip 172.18.0.32 redislabs/redis
-docker run -d --cap-add=ALL --name s3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s3.rlabs.io --net rlabs --ip 172.18.0.33 redislabs/redis
+docker run -d --cap-add=ALL --name s1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s1.reatlabs.org --net reatlabs --ip 172.18.0.31 redislabs/redis
+docker run -d --cap-add=ALL --name s2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s2.reatlabs.org --net reatlabs --ip 172.18.0.32 redislabs/redis
+docker run -d --cap-add=ALL --name s3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s3.reatlabs.org --net reatlabs --ip 172.18.0.33 redislabs/redis
 docker exec --user root s1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -218,27 +218,27 @@ EOF
 cat << EOF > scripts/create_north_cluster.sh
 docker exec -it n1 bash -c "/opt/redislabs/bin/rladmin cluster create persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.21 \
-        name north.rlabs.io username admin@rlabs.io password admin";
+        name north.reatlabs.org username admin@reatlabs.org password admin";
 
 docker exec -it n2 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.22 \
-        username admin@rlabs.io password admin nodes 172.18.0.21";
+        username admin@reatlabs.org password admin nodes 172.18.0.21";
 
 docker exec -it n3 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.23 \
-        username admin@rlabs.io password admin nodes 172.18.0.21";
+        username admin@reatlabs.org password admin nodes 172.18.0.21";
 EOF
 
 cat << EOF > scripts/create_south_cluster.sh
 sudo docker exec -it s1 bash -c "/opt/redislabs/bin/rladmin cluster create persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.31 \
-        name south.rlabs.io username admin@rlabs.io password admin";
+        name south.reatlabs.org username admin@reatlabs.org password admin";
 sudo docker exec -it s2 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.32 \
-        username admin@rlabs.io password admin nodes 172.18.0.31";
+        username admin@reatlabs.org password admin nodes 172.18.0.31";
 sudo docker exec -it s3 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.33 \
-        username admin@rlabs.io password admin nodes 172.18.0.31";
+        username admin@reatlabs.org password admin nodes 172.18.0.31";
 EOF
 
 # make the scripts executable
@@ -283,7 +283,7 @@ You're finished creating the base VM.
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
 ```bash
-docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` --restart=always -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name vnc -h vnc -d re-vnc;
+docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` --restart=always -p 80:6901 -e VNC_PW=trainee! --net reatlabs --ip 172.18.0.2  --name vnc -h vnc -d re-vnc;
 ```
 
 Requirement  | Specification  
@@ -348,7 +348,7 @@ ssh_singlenode
 sudo docker images
 sudo docker ps
 sudo docker network list
-sudo docker network inspect rlabs
+sudo docker network inspect reatlabs
 sudo docker image inspect redislabs/redis
 exit
 ```
