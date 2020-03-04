@@ -103,7 +103,7 @@ echo 'nameserver 172.18.0.20' > resolve/resolv.conf
 docker network create --subnet=172.18.0.0/16 rlabs
 
 # for BIND DNS
-docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
+docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h dns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 
 # for Coredns
 docker pull coredns/coredns
