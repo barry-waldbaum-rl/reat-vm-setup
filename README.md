@@ -56,8 +56,10 @@ groupadd docker
 usermod -aG docker trainee
 ```
 
+
+Add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
+
 ```bash
-# add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
 trainee ALL=(ALL) NOPASSWD:ALL
 ```
 
