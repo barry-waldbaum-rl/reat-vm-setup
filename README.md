@@ -50,12 +50,15 @@ apt -y update
 apt -y install vim
 
 update-alternatives --config editor
+```
 
+Enter '3' to set the editor type.
+
+```bash
 adduser --disabled-password --gecos "" trainee
 groupadd docker
 usermod -aG docker trainee
 ```
-
 
 Add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
 
