@@ -103,14 +103,14 @@ echo 'nameserver 172.18.0.20' > resolve/resolv.conf
 docker network create --subnet=172.18.0.0/16 rlabs
 
 # for BIND DNS
-docker run --name bind -d -v ~/resolve/resolv.conf:/etc/resolv.conf  -h ns.reatlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
+docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 
 # for Coredns
 docker pull coredns/coredns
 
 # create Corefile and rlabs.db and put them in /home/trainee/coredns/
 
-docker run -d --name coredns -h dns.rlabs.org --restart=always --net rlabs --ip 172.18.0.20 --volume=/home/trainee/coredns/:/root/ coredns/coredns -conf /root/Corefile
+docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h dns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
 ```
 
 10. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
