@@ -243,13 +243,13 @@ docker exec -it n3 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_p
 EOF
 
 cat << EOF > scripts/create_south_cluster.sh
-sudo docker exec -it s1 bash -c "/opt/redislabs/bin/rladmin cluster create persistent_path \
+docker exec -it s1 bash -c "/opt/redislabs/bin/rladmin cluster create persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.31 \
         name south.rlabs.org username admin@rlabs.org password admin";
-sudo docker exec -it s2 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
+docker exec -it s2 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.32 \
         username admin@rlabs.org password admin nodes 172.18.0.31";
-sudo docker exec -it s3 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
+docker exec -it s3 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.33 \
         username admin@rlabs.org password admin nodes 172.18.0.31";
 EOF
@@ -278,7 +278,13 @@ scripts/create_north_cluster.sh
 scripts/create_south_cluster.sh
 ```
 
-15. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
+15. Run the Redis Insight utility app as a container so students can view database contents in a GUI.
+
+```bash
+docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always -p 8001:8001 --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
+```
+
+16. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
 
 ```bash
 cd vnc_docker
@@ -287,11 +293,11 @@ docker build -t re-vnc .
 
 You're finished creating the base VM.
 
-16. Create a snapshot from the VM called 'reat-snap'.
+17. Create a snapshot from the VM called 'reat-snap'.
 
-17. Create an image from the snapshot called 'reat-image'.
+18. Create an image from the snapshot called 'reat-image'.
 
-18. Create a test instance from the image defined by the specs below which include a startup script.
+19. Create a test instance from the image defined by the specs below which include a startup script.
 
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
@@ -309,11 +315,11 @@ Disk size | 30 GB
 Network | reat-vpc
 Startup script | see above
 
-19. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+20. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
 
-20. Sign in to VNC desktop with password 'trainee!'.
+21. Sign in to VNC desktop with password 'trainee!'.
 
-21. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
+22. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
 
 ```bash
 n1 = 172.18.0.21
@@ -325,7 +331,7 @@ s2 = 172.18.0.32
 s3 = 172.18.0.33
 ```
 
-22. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
+23. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
 
 ```bash
 # restart RL nodes
@@ -339,7 +345,9 @@ create_south_cluster
 # SSH to RL nodes so you can run rladmin
 ssh_n1
 rlcheck
-rladmin
+rladmin status
+redis-cli -p 12000 -h redis-12000.north.rlabs.org
+exit
 exit
 ssh_n2
 exit
