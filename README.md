@@ -2,11 +2,15 @@
 
 Setup and test a base VM that runs:
 - Docker network
-- VNC
-- DNS
-- 6 Redis Labs nodes that appear to run on separate machines.
+- VNC container
+- DNS container
+- 6 Redis Labs node containers that appear to students as VMs.
 
-Each student gets a VM with 6 nodes running in 2 clusters (north and south). Each node runs in a container but we make it look like a separate VM with its own IP. Each student gets a VNC desktop to their main VM so they can open a browser and view RL admin consoles and a terminal so they can SSH to nodes and run rladmin.
+Each student gets a VM with 6 RL nodes running in 2 clusters (north and south). Each node runs in a container but we make it look like a separate VM with its own IP. Each student gets a VNC desktop to their main VM where they can open browser sessions to admin consoles and SSH terminals to node shells and run rladmin.
+
+The DNS and VNC containers need to be configured as follows:
+- DNS - https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
+- VNC - https://docs.google.com/document/d/1X8K2jZTwBLr_jG9a01-u_dxRrTwb2URNCy0zXoQZUG4/edit#
 
 Build the following:
 - Base VM
@@ -166,38 +170,38 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-alias ssh_singlenode="ssh trainee@\$EX_IP"
+alias ssh_singlenode="ssh trainee@\$INT_IP"
 
-alias start_redis='ssh -t trainee@\$EX_IP docker run -it --name redis -h redis -w / redis bash'
-alias stop_redis='ssh -t trainee@\$EX_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
+alias start_redis='ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash'
+alias stop_redis='ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
 
-alias ssh_n1="ssh -t trainee@\$EX_IP docker exec -it n1 bash "
-alias ssh_n2="ssh -t trainee@\$EX_IP docker exec -it n2 bash "
-alias ssh_n3="ssh -t trainee@\$EX_IP docker exec -it n3 bash "
-alias ssh_s1="ssh -t trainee@\$EX_IP docker exec -it s1 bash "
-alias ssh_s2="ssh -t trainee@\$EX_IP docker exec -it s2 bash "
-alias ssh_s3="ssh -t trainee@\$EX_IP docker exec -it s3 bash "
+alias ssh_n1="ssh -t trainee@\$INT_IP docker exec -it n1 bash "
+alias ssh_n2="ssh -t trainee@\$INT_IP docker exec -it n2 bash "
+alias ssh_n3="ssh -t trainee@\$INT_IP docker exec -it n3 bash "
+alias ssh_s1="ssh -t trainee@\$INT_IP docker exec -it s1 bash "
+alias ssh_s2="ssh -t trainee@\$INT_IP docker exec -it s2 bash "
+alias ssh_s3="ssh -t trainee@\$INT_IP docker exec -it s3 bash "
 
-alias start_n1="ssh -t trainee@\$EX_IP docker start n1 "
-alias start_n2="ssh -t trainee@\$EX_IP docker start n2 "
-alias start_n3="ssh -t trainee@\$EX_IP docker start n3 "
+alias start_n1="ssh -t trainee@\$INT_IP docker start n1 "
+alias start_n2="ssh -t trainee@\$INT_IP docker start n2 "
+alias start_n3="ssh -t trainee@\$INT_IP docker start n3 "
 
-alias stop_n1="ssh -t trainee@\$EX_IP docker stop n1 "
-alias stop_n2="ssh -t trainee@\$EX_IP docker stop n2 "
-alias stop_n3="ssh -t trainee@\$EX_IP docker stop n3 "
+alias stop_n1="ssh -t trainee@\$INT_IP docker stop n1 "
+alias stop_n2="ssh -t trainee@\$INT_IP docker stop n2 "
+alias stop_n3="ssh -t trainee@\$INT_IP docker stop n3 "
 
-alias start_s1="ssh -t trainee@\$EX_IP docker start s1 "
-alias start_s2="ssh -t trainee@\$EX_IP docker start s2 "
-alias start_s3="ssh -t trainee@\$EX_IP docker start s3 "
+alias start_s1="ssh -t trainee@\$INT_IP docker start s1 "
+alias start_s2="ssh -t trainee@\$INT_IP docker start s2 "
+alias start_s3="ssh -t trainee@\$INT_IP docker start s3 "
 
-alias stop_s1="ssh -t trainee@\$EX_IP docker stop s1 "
-alias stop_s2="ssh -t trainee@\$EX_IP docker stop s2 "
-alias stop_s3="ssh -t trainee@\$EX_IP docker stop s3 "
+alias stop_s1="ssh -t trainee@\$INT_IP docker stop s1 "
+alias stop_s2="ssh -t trainee@\$INT_IP docker stop s2 "
+alias stop_s3="ssh -t trainee@\$INT_IP docker stop s3 "
 
-alias start_north_nodes="ssh -t trainee@\$EX_IP ./scripts/start_north_nodes.sh "
-alias start_south_nodes="ssh -t trainee@\$EX_IP ./scripts/start_south_nodes.sh "
-alias create_north_cluster="ssh -t trainee@\$EX_IP ./scripts/create_north_cluster.sh "
-alias create_south_cluster="ssh -t trainee@\$EX_IP ./scripts/create_south_cluster.sh "
+alias start_north_nodes="ssh -t trainee@\$INT_IP ./scripts/start_north_nodes.sh "
+alias start_south_nodes="ssh -t trainee@\$INT_IP ./scripts/start_south_nodes.sh "
+alias create_north_cluster="ssh -t trainee@\$INT_IP ./scripts/create_north_cluster.sh "
+alias create_south_cluster="ssh -t trainee@\$INT_IP ./scripts/create_south_cluster.sh "
 EOF
 
 mkdir scripts
@@ -302,7 +306,7 @@ You're finished creating the base VM.
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
 ```bash
-docker run -e EX_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` --restart=always -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name vnc -h vnc -d re-vnc;
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name vnc -h vnc -d re-vnc;
 ```
 
 Requirement  | Specification  
