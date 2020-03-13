@@ -377,3 +377,9 @@ sudo docker network inspect rlabs
 sudo docker image inspect redislabs/redis
 exit
 ```
+
+If you want to add dnsutils to test DNS on the rlabs network run
+```bash
+docker run --name utils -it -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --net rlabs --ip 172.18.0.10 tutum/dnsutils
+```
+
