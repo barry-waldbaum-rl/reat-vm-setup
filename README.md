@@ -154,6 +154,7 @@ COPY ./ssh /headless/.ssh
 RUN chown -R 1000 /headless/.ssh/
 COPY bashrc /headless/.bashrc
 RUN chown -R 1000 /headless/.bashrc
+COPY resolve/resolv.conf /etc/resolv.conf
 
 ## switch back to default user
 USER 1000
@@ -316,7 +317,7 @@ You're finished creating the base VM.
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
 ```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc;
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc;
 ```
 
 Requirement  | Specification  
