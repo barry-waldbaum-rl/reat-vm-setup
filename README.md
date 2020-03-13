@@ -170,10 +170,12 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-alias ssh_singlenode="ssh trainee@\$INT_IP"
+alias ssh_installer="ssh trainee@\$INT_IP"
 
 alias start_redis='ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash'
 alias stop_redis='ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
+
+alias run_dnsutils="ssh -t trainee@\$INT_IP ./scripts/run_dnsutils.sh "
 
 alias ssh_n1="ssh -t trainee@\$INT_IP docker exec -it n1 bash "
 alias ssh_n2="ssh -t trainee@\$INT_IP docker exec -it n2 bash "
@@ -200,8 +202,10 @@ alias stop_s3="ssh -t trainee@\$INT_IP docker stop s3 "
 
 alias start_north_nodes="ssh -t trainee@\$INT_IP ./scripts/start_north_nodes.sh "
 alias start_south_nodes="ssh -t trainee@\$INT_IP ./scripts/start_south_nodes.sh "
+
 alias create_north_cluster="ssh -t trainee@\$INT_IP ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@\$INT_IP ./scripts/create_south_cluster.sh "
+
 EOF
 
 mkdir scripts
@@ -258,11 +262,17 @@ docker exec -it s3 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_p
         username admin@rlabs.org password admin nodes 172.18.0.31";
 EOF
 
+cat << EOF > scripts/run_dnsutils.sh
+docker kill dnsutils; docker rm dnsutils
+docker run --name dnsutils -it -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --net rlabs --hostname dnsutils.rlabs.org --ip 172.18.0.6 tutum/dnsutils
+EOF
+
 # make the scripts executable
 chmod 755 scripts/start_north_nodes.sh
 chmod 755 scripts/start_south_nodes.sh
 chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
+chmod 755 scripts/run_dnsutils.sh
 ```
 
 13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
@@ -285,7 +295,7 @@ scripts/create_south_cluster.sh
 15. Run the Redis Insight utility app as a container so students can view database contents in a GUI.
 
 ```bash
-docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always -p 8001:8001 --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
+docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always  --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
 ```
 
 16. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
@@ -306,7 +316,7 @@ You're finished creating the base VM.
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
 ```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name vnc -h vnc -d re-vnc;
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc;
 ```
 
 Requirement  | Specification  
@@ -369,7 +379,7 @@ exit
 stop_redis
 
 # SSH to the main VM as user 'trainee' with sudo/root permissions
-ssh_singlenode
+ssh_installer
 sudo docker images
 sudo docker ps
 sudo docker network list
@@ -380,6 +390,6 @@ exit
 
 If you want to add dnsutils to test DNS on the rlabs network run
 ```bash
-docker run --name utils -it -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --net rlabs --ip 172.18.0.10 tutum/dnsutils
+run_dnsutils
 ```
 
