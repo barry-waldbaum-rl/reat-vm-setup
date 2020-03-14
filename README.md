@@ -114,10 +114,7 @@ docker network create --subnet=172.18.0.0/16 rlabs
 # for BIND DNS
 docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 
-# for Coredns
-docker pull coredns/coredns
-
-# create Corefile and rlabs.db and put them in /home/trainee/coredns/
+# OR if using Coredns instead of BIND, create Corefile and rlabs.db and put them in /home/trainee/coredns/
 
 docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
 ```
