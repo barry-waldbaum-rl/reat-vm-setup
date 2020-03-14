@@ -313,7 +313,12 @@ You're finished creating the base VM.
 NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
 
 ```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc;
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+```
+
+When going to a larger machine (8 CPU, 30 GB RAM), the 'awk' command in the startup script above needed to be altered to the following to properly strip out the IP address (notice a 2nd 'awk' command and two different separators ':' and ' '):
+```bash
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
 ```
 
 Requirement  | Specification  
