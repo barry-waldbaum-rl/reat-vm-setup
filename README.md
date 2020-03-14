@@ -151,7 +151,6 @@ COPY ./ssh /headless/.ssh
 RUN chown -R 1000 /headless/.ssh/
 COPY bashrc /headless/.bashrc
 RUN chown -R 1000 /headless/.bashrc
-COPY resolve/resolv.conf /etc/resolv.conf
 
 ## switch back to default user
 USER 1000
