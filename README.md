@@ -328,6 +328,8 @@ This puts you in a shell running in the VNC container. It's on the 'rlabs' Docke
 
 ```bash
 echo $INT_IP
+
+
 ```
 
 20. If it doesn't match the interal IP address listed for the VM in the GCP console, you'll have to start another VM using the other startup script with different 'awk' commands.
@@ -336,6 +338,8 @@ echo $INT_IP
 
 ```bash
 alias
+
+
 ```
 
 22. Make sure the VMs internal IP is entered correctly in the alias commands as well. 
@@ -383,6 +387,7 @@ Now you should have a DNS server configured to resolve host and cluster names.
 
 ```bash
 exit
+
 
 ```
 
@@ -440,12 +445,14 @@ If it works, you're ready to take a backup of your work into another GCP VM snap
 docker stop controller
 docker rm controller
 
+
 ```
 
 36. Make sure the container is no longer present.
 
 ```bash
 docker ps -a
+
 
 ```
 
@@ -462,6 +469,7 @@ docker ps -a
 ```bash
 echo $INT_IP
 
+
 ```
 
 42. Run the following to make sure your DNS resolves hostnames.
@@ -469,6 +477,7 @@ echo $INT_IP
 ```bash
 run_dnsutils
 nslookup n1.rlabs.org
+
 
 ```
 
@@ -523,6 +532,8 @@ s3 = 172.18.0.33
 
 ```bash
 redis-cli -p 12000 -h north.rlabs.org
+
+
 ```
 
 51. Set a key in the database.
