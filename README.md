@@ -314,19 +314,45 @@ Here's the newer one with two 'awk' commands that works on newer and larger VMs.
 docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
 ```
 
-16. SSH to the instance from GCP console.
+There are two ways to access the VM at this point and you'll use them both for different reasons. First, you'll use the VNC desktop to start and configure the DNS server running in a container. Second, you'll SSH to VM from GCP console to save the modified DNS container and push it up to GCR (Google Container Registry). It helps to save our DNS configuration work and make it available to everyone is RedisLabs so others can reconfigure the lab environment if they need to.
 
-17. Switch to user trainee.
+16. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+
+17. Sign in to VNC desktop with password 'trainee!'.
+
+18. Open a terminal shell window.
+
+This puts you in a shell running in the VNC container. It's on the 'rlabs' Docker network and cannot start and stop other containers on the network. For that, you need to SSH back down to base VM as the 'trainee' user. This user has sudo permissions to manage containers on the Docker network. You need to start the default, empty DNS Bind server in a container running on the Docker network.
+
+19. Run the following command to make sure the VMs internal IP address got set properly.
 
 ```bash
-sudo su - trainee
+echo $INT_IP
+```
+
+20. If it doesn't match the interal IP address listed for the VM in the GCP console, you'll have to start another VM using the other startup script with different 'awk' commands.
+
+21. Run the following command to see the list of alias commands you and students can run from the VNC terminal (host named 'controller').
+
+```bash
+alias
+```
+
+22. Make sure the VMs internal IP is entered correctly in the alias commands as well. 
+
+23. Run the following command to SSH down to the base VM running the Docker network and containers (at this point, VNC is the only running container).
+
+```bash
+ssh_installer
 
 
 ```
 
-18. Start a standard, empty DNS Bind server running on the Docker network so hostnames get resolved in the private network.
+24. Enter the following command to run a default DNS Bind server on the Docker network.
 
-You will have two options: BIND and CoreDNS. Only BIND works right now. CoreDNS doesn't resolve cluster names yet.
+Perform the following steps to configure the DNS server so it can resolve hostnames on the private Docker network.
+
+Below are steps to run a BIND DNS server or a CoreDNS server. Only BIND works right now. CoreDNS doesn't resolve cluster names yet.
 
 BIND DNS
 
@@ -344,14 +370,23 @@ docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.co
 
 ```
 
-19. If using BIND DNS:
-- Get the VMs public IP from GCP console
-- Point a laptop browser to https://<public-ip>:10000
+25. Using BIND DNS:
+- Open a Chrome browser on the VNC desktop
+- Point it to the address: https://172.18.0.20:10000
 - Sign in as 'root' with 'password'
 - Configure the server according to steps here:
 https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
- 
-20. Run this script to start a container with DNS Utils in it so you can test your DNS config.
+  
+Now you should have a DNS server configured to resolve host and cluster names.
+
+26. Run the following command to return the VNC container on Docker network. 
+
+```bash
+exit
+
+```
+
+27. Run this script to start a container with DNS Utils in it so you can test your DNS config. This script is run from the default user in the VNC container, which transparently SSH's down to the base VM as the 'trainee' user and starts the container there. This is a common practice that students will use to start and stop containers on the Docker network so it looks to them like they're using VMs instead of containers.
 
 ```bash
 ./scripts/run_dnsutils.sh
@@ -359,85 +394,114 @@ https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/
 
 ```
 
-21. Run the following commands to make sure DNS is working
+28. Run the following commands to make sure DNS is working
 
 ```bash
 nslookup n1.rlabs.org
 nslookup s1.rlabs.org
 dig @ns.rlabs.org north.rlabs.org
 dig @ns.rlabs.org south.rlabs.org
+
+
 ```
- 
-22. Create a snapshot from the VM called 'rat-dns'.
 
-23. Create an image from the snapshot called 'rat-dns'.
+If working, these commands should resolve to 172.18.0.21 for 'n1', and 'n1', 'n2', and 'n3' for 'north'.
 
+If not, you'll need to stop and remove the DNS server container and start again until you get it working.
 
+29. Once working, stop and take a Docker image of the changes to the DNS server container so you're work can be saved and made available to others at RedisLabs. You'll first commit the changes to the local Docker repo. Then you'll upload that image to the GCR repo.
 
+30. Using the second way to access your VM, SSH to it in GCP console. This signs you in with RedisLabs employee credentials so you can upload the Docker image to GCR.
 
-13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
+31. To do this, you'll need to:
+- Commit container changes to the local Docker repo
+- Stop the original DNS server container
+- Rerun the command above that you used to start the default DNS server, substituting the Docker image for the new one in the local repo
+- Retest DNS to make sure the new DNS Docker image works.
+- Get a service account JSON key and apply it so Docker can authenticate to GCR and upload your new image to the remote repo
+- Upload the new image to the GCR repo.
+
+See instructions here for details:
+https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
+
+Now you'll test the new DNS Docker image download from GCR to make sure your DNS changes work in a new VM.
+
+32. Start a new VM using the same steps as before for starting 'rat-dns'. Make sure to include the startup script to run the VNC container.
+
+33. Use the same command you used before to start the default DNS BIND server, substituting in the new GCR Docker image 'gcr.io/redislabs-university/rat-dns' for 'sameersbn/bind'.
+
+34. Rerun your DNS Utils tests above.
+
+If it works, you're ready to take a backup of your work into another GCP VM snapshot and image so you don't have to configure DNS anymore unless it changes. This step is a bit tricky because you need to remove the VNC container so you can re-add when you start a new VM with that VMs internal IP (otherwise you'll try to use the old VM's IP which won't work).
+
+35. From the terminal you SSH'd in from GCP console, stop and remove the VNC container.
 
 ```bash
-cd ..
-scripts/start_north_nodes.sh
-scripts/start_south_nodes.sh
-
+docker stop controller
+docker rm controller
 
 ```
 
-14. Run scripts to build Redis Labs clusters from their nodes.
+36. Make sure the container is no longer present.
 
 ```bash
-scripts/create_north_cluster.sh
-scripts/create_south_cluster.sh
-
+docker ps -a
 
 ```
 
-15. Run the Redis Insight utility app as a container so students can view database contents in a GUI.
+37. Create a snapshot of the VM called 'rat-dns-ready'.
+
+38. Create an image from the snapshot called 'rat-dns-ready'.
+
+39. Start a new VM from the 'rat-dns-done' image and re-enter the startup script from before to run the VNC container.
+
+40. Get your new VM's public IP and sign in to the VNC console on port 80 from a laptop browser.
+
+41. Open a terminal shell and run the following to make sure you got your new VMs internal IP.
 
 ```bash
-docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always  --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
-
+echo $INT_IP
 
 ```
 
-
-
-
-27. Create a test or student instance from the image as follows:
-
-Requirement  | Specification  
------------- | -------------
-Name | rat-controller-01
-CPU | 4
-Memory | 15 GB
-Boot disk | rat-with-dns
-Disk size | 30 GB
-Network | rat-vpc
-Startup script | see below
-
-START UP SCRIPT: Runs VNC in a container and exposes it on port 80 so students can access admin consoles without being firewall blocked on port 8443.
-
-There seem to be two different sets of 'awk' commands that work on GCP instances these days.
-
-Here's the original script with one 'awk' command that still works.
+42. Run the following to make sure your DNS resolves hostnames.
 
 ```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+run_dnsutils
+nslookup n1.rlabs.org
+
 ```
 
-Here's the newer one with two 'awk' commands that works on newer and larger VMs.
+43. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south).
 
 ```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+start_north_nodes
+start_south_nodes
+
+
 ```
 
-28. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+44. Run scripts to build Redis Labs clusters from their nodes.
 
-29. Sign in to VNC desktop with password 'trainee!'.
+```bash
+create_north_cluster.sh
+create_south_cluster.sh
 
-30. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
+
+```
+
+45. Run the following to make sure DNS is resolving cluster names.
+
+NOTE: Cluster names will not resolve until you start the nodes and create the cluster because pDNS needs to be running.
+
+```bash
+dig @ns.rlabs.org north.rlabs.org
+dig @ns.rlabs.org south.rlabs.org
+
+
+```
+
+46. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
 
 ```bash
 n1 = 172.18.0.21
@@ -449,16 +513,52 @@ s2 = 172.18.0.32
 s3 = 172.18.0.33
 ```
 
-31. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
+47. Create a database from node 'n1' listening on port '12000'.
+
+48. Run the following in the terminal to SSH to node 'n2'.
+
+49. Run the following and make sure the proxy is listening on 'node:1'.
+
+50. Run the following to connect to the redis-cli using DNS resolution:
 
 ```bash
-# restart RL nodes
-start_north_nodes
-start_south_nodes
+redis-cli -p 12000 -h north.rlabs.org
+```
 
-# create RL clusters
-create_north_cluster
-create_south_cluster
+51. Set a key in the database.
+
+52. Run the Redis Insight utility app as a container so students can view database contents in a GUI.
+
+```bash
+ssh_installer
+docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always  --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
+
+
+```
+
+Test that Redis Insight can connect to the database using DNS as well.
+
+53. Point the Chrome browser on the VNC desktop to http://insight:8001.
+
+54. Accept the terms and click Add Database.
+
+55. Give the DB any name
+
+56. Enter hostname: north.rlabs.org or redis-12000.north.rlabs.org
+
+57. Enter port: 12000
+
+58. Click connect.
+
+59. Click Browse - you should see the key you created.
+
+Now you done setting up everything and ready to create student instances, but first take another VM snapshot and image to save all your work.
+
+60. Stop and remove the VNC container.
+
+61. Take another VM snapshot and image called 'rat-ready'.
+
+Here are some additional commands you can run as the 'default' user on the VNC terminal.
 
 # SSH to RL nodes so you can run rladmin
 ssh_n1
