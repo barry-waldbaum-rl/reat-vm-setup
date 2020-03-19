@@ -287,6 +287,94 @@ docker build -t re-vnc .
 
 ```
 
+You're finished creating the base VM minus a DNS server. Now it's time to configure the DNS server and test your configuration. This may change over time so it's good to save your work in a GCP image so you don't have to do these steps again.
+
+13. Create a snapshot from the VM called 'rat-no-dns'.
+
+14. Create an image from the snapshot called 'rat-no-dns'.
+
+This image has the following on it:
+- Docker network 'rlabs'
+- Docker images 'console/vnc' and 're-vnc'
+- No Docker containers running yet.
+
+15. Create a new VM called 'rat-dns' from the image 'rat-no-dns' with the following startup script. This starts the VNC container so you can sign in to the desktop and configure the DNS server with its WebMin UI.
+
+NOTE: There seems to be two different sets of 'awk' commands that work on GCP instances these days.
+
+Here's the original script with one 'awk' command that still works.
+
+```bash
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+```
+
+Here's the newer one with two 'awk' commands that works on newer and larger VMs.
+
+```bash
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+```
+
+16. SSH to the instance from GCP console.
+
+17. Switch to user trainee.
+
+```bash
+sudo su - trainee
+
+
+```
+
+18. Start a standard, empty DNS Bind server running on the Docker network so hostnames get resolved in the private network.
+
+You will have two options: BIND and CoreDNS. Only BIND works right now. CoreDNS doesn't resolve cluster names yet.
+
+BIND DNS
+
+```bash
+docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp sameersbn/bind
+
+
+```
+
+CoreDNS - Create Corefile and rlabs.db, put them in /home/trainee/coredns/, and run:
+
+```bash
+docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
+
+
+```
+
+19. If using BIND DNS:
+- Get the VMs public IP from GCP console
+- Point a laptop browser to https://<public-ip>:10000
+- Sign in as 'root' with 'password'
+- Configure the server according to steps here:
+https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
+ 
+20. Run this script to start a container with DNS Utils in it so you can test your DNS config.
+
+```bash
+./scripts/run_dnsutils.sh
+
+
+```
+
+21. Run the following commands to make sure DNS is working
+
+```bash
+nslookup n1.rlabs.org
+nslookup s1.rlabs.org
+dig @ns.rlabs.org north.rlabs.org
+dig @ns.rlabs.org south.rlabs.org
+```
+ 
+22. Create a snapshot from the VM called 'rat-dns'.
+
+23. Create an image from the snapshot called 'rat-dns'.
+
+
+
+
 13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
 
 ```bash
@@ -314,73 +402,8 @@ docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv
 
 ```
 
-You're finished creating the base VM minus a DNS server. It's time to save your work in a GCP image so you don't have to do these steps again.
-
-16. Create a snapshot from the VM called 'rat-no-dns'.
-
-17. Create an image from the snapshot called 'rat-no-dns'.
-
-Now it's time to configure the DNS server and test your configuration. This may change over time so it's good to start with a base image with most of the work already done and saved.
-
-18. Create a new instance called 'rat-with-dns' from the saved image.
-
-19. SSH to the instance from GCP console.
-
-20. Switch to user trainee.
-
-```bash
-sudo su - trainee
 
 
-```
-
-21. Add a DNS server to the Docker network so hostnames get resolved in the private network.
-
-You will have two options: BIND and CoreDNS. Only BIND works right now. CoreDNS doesn't resolve cluster names yet.
-
-BIND DNS
-
-```bash
-docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp sameersbn/bind
-
-
-```
-
-CoreDNS - Create Corefile and rlabs.db, put them in /home/trainee/coredns/, and run:
-
-```bash
-docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
-
-
-```
-
-22. If using BIND DNS:
-- Get the VMs public IP from GCP console
-- Point a laptop browser to https://<public-ip>:10000
-- Sign in as 'root' with 'password'
-- Configure the server according to steps here:
-https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
- 
-23. Run this script to start a container with DNS Utils in it so you can test your DNS config.
-
-```bash
-./scripts/run_dnsutils.sh
-
-
-```
-
-24. Run the following commands to make sure DNS is working
-
-```bash
-nslookup n1.rlabs.org
-nslookup s1.rlabs.org
-dig @ns.rlabs.org north.rlabs.org
-dig @ns.rlabs.org south.rlabs.org
-```
- 
-25. Create a snapshot from the VM called 'rat-with-dns'.
-
-26. Create an image from the snapshot called 'rat-with-dns'.
 
 27. Create a test or student instance from the image as follows:
 
