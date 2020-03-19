@@ -341,7 +341,7 @@ You will have two options: BIND and CoreDNS. Only BIND works right now. CoreDNS 
 BIND DNS
 
 ```bash
-docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net ralbs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp sameersbn/bind
+docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp sameersbn/bind
 
 
 ```
