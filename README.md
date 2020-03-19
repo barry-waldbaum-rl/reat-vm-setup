@@ -53,6 +53,8 @@ apt -y update
 apt -y install vim
 
 update-alternatives --config editor
+3
+
 ```
 
 Enter '3' to set the editor type.
@@ -61,6 +63,7 @@ Enter '3' to set the editor type.
 adduser --disabled-password --gecos "" trainee
 groupadd docker
 usermod -aG docker trainee
+
 ```
 
 Add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
@@ -77,6 +80,8 @@ apt-get install \
     ca-certificates \
     curl \
     software-properties-common 
+Y
+
 ```
 
 and enter 'Y'.
@@ -93,12 +98,14 @@ add-apt-repository \
 
 apt-get update
 apt-get -y install docker-ce
+
 ```
 
 7. Switch to 'trainee' user to create the Docker network, DNS bind server, and add user scripts.
 
 ```bash
 sudo su - trainee
+
 ```
 
 8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so trainee user's prompt is green and distinguishable from VNC user (yellow) and RL node admins (red r white).
@@ -110,6 +117,7 @@ mkdir resolve
 echo 'nameserver 172.18.0.20' > resolve/resolv.conf
 
 docker network create --subnet=172.18.0.0/16 rlabs
+
 ```
 
 10. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
@@ -125,6 +133,7 @@ cp -r .ssh/id_rsa.pub .ssh/authorized_keys
 
 mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
+
 ```
 
 11. Create Dockerfile that will be used to build the VNC Docker image on the base VM (you only run VNC container in student instance startup scripts because the container needs to receive the instance's private IP to append to SSH alias commands).
@@ -263,6 +272,7 @@ chmod 755 scripts/start_south_nodes.sh
 chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
 chmod 755 scripts/run_dnsutils.sh
+
 ```
 
 13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
@@ -270,6 +280,7 @@ chmod 755 scripts/run_dnsutils.sh
 ```bash
 scripts/start_north_nodes.sh
 scripts/start_south_nodes.sh
+
 ```
 
 14. Run scripts to build Redis Labs clusters from their nodes.
@@ -277,12 +288,14 @@ scripts/start_south_nodes.sh
 ```bash
 scripts/create_north_cluster.sh
 scripts/create_south_cluster.sh
+
 ```
 
 15. Run the Redis Insight utility app as a container so students can view database contents in a GUI.
 
 ```bash
 docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always  --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
+
 ```
 
 16. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
@@ -290,6 +303,7 @@ docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv
 ```bash
 cd vnc_docker
 docker build -t re-vnc .
+
 ```
 
 You're finished creating the base VM minus a DNS server. It's time to save your work in a GCP image so you don't have to do these steps again.
@@ -308,6 +322,7 @@ Now it's time to configure the DNS server and test your configuration. This may 
 
 ```bash
 sudo su - trainee
+
 ```
 
 22. Add a DNS server to the Docker network so hostnames get resolved in the private network.
@@ -318,12 +333,14 @@ BIND DNS
 
 ```bash
 docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
+
 ```
 
 CoreDNS - Create Corefile and rlabs.db, put them in /home/trainee/coredns/, and run:
 
 ```bash
 docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
+
 ```
 
 23. If using BIND DNS:
@@ -337,6 +354,7 @@ https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/
 
 ```bash
 ./scripts/run_dnsutils.sh
+
 ```
 
 25. Run the following commands to make sure DNS is working
