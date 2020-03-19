@@ -13,10 +13,9 @@ The DNS and VNC containers need to be configured as follows:
 - VNC - https://docs.google.com/document/d/1X8K2jZTwBLr_jG9a01-u_dxRrTwb2URNCy0zXoQZUG4/edit#
 
 Build the following:
-- Base VM
-- Snapshot
-- Image
-- Test instance.
+- Base VM, snapshot, and image with no DNS server
+- Base VM, snapshot, and image with DNS
+- Test instance with VNC.
 
 Steps:
 
@@ -24,9 +23,9 @@ Steps:
 
 Requirement | Specification
 ------------|--------------
-Name | reat-vpc
+Name | rat-vpc
 Subnet Creation Mode | Custom
-Subnet Name | reat-subnet
+Subnet Name | rat-subnet
 Subnet IP Address Range | 172.18.0.0/16
 
 2. Create a firewall rule that allows ingress on all ports from all sources (0.0.0.0/0) to all targets.
@@ -35,7 +34,7 @@ Subnet IP Address Range | 172.18.0.0/16
   
 Requirement  | Specification  
 ------------ | -------------
-Name | reat-base-vm
+Name | rat-no-dns
 CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
@@ -101,22 +100,16 @@ apt-get -y install docker-ce
 ```bash
 sudo su - trainee
 ```
+
 8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so trainee user's prompt is green and distinguishable from VNC user (yellow) and RL node admins (red r white).
 
-9. Create the Docker subnet and add the DNS bind server to it.
+9. Create the Docker subnet.
 
 ```bash
 mkdir resolve
 echo 'nameserver 172.18.0.20' > resolve/resolv.conf
 
 docker network create --subnet=172.18.0.0/16 rlabs
-
-# for BIND DNS
-docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
-
-# OR if using Coredns instead of BIND, create Corefile and rlabs.db and put them in /home/trainee/coredns/
-
-docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
 ```
 
 10. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
@@ -283,9 +276,6 @@ scripts/start_south_nodes.sh
 
 ```bash
 scripts/create_north_cluster.sh
-```
-
-```bash
 scripts/create_south_cluster.sh
 ```
 
@@ -302,40 +292,92 @@ cd vnc_docker
 docker build -t re-vnc .
 ```
 
-You're finished creating the base VM.
+You're finished creating the base VM minus a DNS server.
 
-17. Create a snapshot from the VM called 'reat-snap'.
+17. Create a snapshot from the VM called 'rat-no-dns'.
 
-18. Create an image from the snapshot called 'reat-image'.
+18. Create an image from the snapshot called 'rat-no-dns'.
 
-19. Create a test instance from the image defined by the specs below which include a startup script.
+19. Create an instance from the image called 'rat-with-dns'.
 
-NOTE: Be sure to add the startup script below which runs VNC container on start up and passes in the instance's internal IP address so, once signed in, a VNC user can SSH back to the main VM as user 'trainee' (for installing Redis Enterprise Software in one of the labs) as well as SSH to RL nodes (n1-n3 and s1-s3) as an RL admin and run 'rlaadmin'.
+20. SSH to the VM from GCP console.
+
+21. Switch to user trainee.
+
+```bash
+sudo su - trainee
+```
+
+22. Add a DNS server to the Docker network so hostnames get resolved in the private network.
+
+You have two options: BIND or CoreDNS (CoreDNS does not resolve cluster names yet).
+
+BIND DNS
+
+```bash
+docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
+```
+
+CoreDNS - Create Corefile and rlabs.db, put them in /home/trainee/coredns/, and run:
+
+```bash
+docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
+```
+
+23. If using BIND DNS:
+- Get the VMs public IP from GCP console
+- Point a laptop browser to https://<public-ip>:10000
+- Sign in as 'root' with 'password'
+- Configure the server according to steps here:
+https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
+ 
+24. Run this script to start a container with DNS Utils in it so you can test your DNS config.
+
+```bash
+./scripts/run_dnsutils.sh
+```
+
+25. Run the following commands to make sure DNS is working
+
+```bash
+nslookup n1.rlabs.org
+nslookup s1.rlabs.org
+dig @ns.rlabs.org north.rlabs.org
+dig @ns.rlabs.org south.rlabs.org
+```
+ 
+26. Create a snapshot from the VM called 'rat-with-dns'.
+
+27. Create an image from the snapshot called 'rat-with-dns'.
+
+28. Create a test instance from the image as follows:
+
+Requirement  | Specification  
+------------ | -------------
+Name | rat-controller-01
+CPU | 4
+Memory | 15 GB
+Boot disk | rat-with-dns
+Disk size | 30 GB
+Network | rat-vpc
+
+START UP SCRIPT: Runs VNC in a container so students can access admin consoles with port 80
+
+```bash
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+```
+
+NOTE: Here's the older script with different 'awk' commands to get the VMs IP.
 
 ```bash
 docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
 ```
 
-When going to a larger machine (8 CPU, 30 GB RAM), the 'awk' command in the startup script above needed to be altered to the following to properly strip out the IP address (notice a 2nd 'awk' command and two different separators ':' and ' '):
-```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
-```
+29. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
 
-Requirement  | Specification  
------------- | -------------
-Name | singlenode-01
-CPU | 4
-Memory | 15 GB
-Boot disk | reat-image
-Disk size | 30 GB
-Network | reat-vpc
-Startup script | see above
+30. Sign in to VNC desktop with password 'trainee!'.
 
-20. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
-
-21. Sign in to VNC desktop with password 'trainee!'.
-
-22. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
+31. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
 
 ```bash
 n1 = 172.18.0.21
@@ -347,7 +389,7 @@ s2 = 172.18.0.32
 s3 = 172.18.0.33
 ```
 
-23. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
+32. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
 
 ```bash
 # restart RL nodes
