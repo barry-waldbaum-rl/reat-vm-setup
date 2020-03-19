@@ -563,14 +563,20 @@ Test that Redis Insight can connect to the database using DNS as well.
 
 59. Click Browse - you should see the key you created.
 
-Now you done setting up everything and ready to create student instances, but first take another VM snapshot and image to save all your work.
+Now you done and ready to create student instances, but first take another VM snapshot and image to save all your work.
 
 60. Stop and remove the VNC container.
 
 61. Take another VM snapshot and image called 'rat-ready'.
 
+'rat-ready' is the image you'll use to creeate student instances.
+
+When creating student instances remember to include the startup scripts which runs the VNC container.
+
+
 Here are some additional commands you can run as the 'default' user on the VNC terminal.
 
+```bash
 # SSH to RL nodes so you can run rladmin
 ssh_n1
 rlcheck
