@@ -43,7 +43,7 @@ Networking | reat-vpc
   
 4. SSH to the base VM from GCP console to finish setup.
 
-5. Install 'vi', add 'trainee' user, put the user in the 'docker' group, and grant the user the ability to run 'sudo' (for RES install lab).
+5. Install 'vi', add user 'trainee', add the user to the 'docker' group, and give the student permissions to run Docker commands without entering 'sudo'.
 
 ```bash 
 # install and set default editor to vim
@@ -67,13 +67,13 @@ usermod -aG docker trainee
 
 ```
 
-Add the following line to /etc/sudoers using "sudo visudo" so 'trainee' user can run sudo
+Add the following line to /etc/sudoers using "sudo visudo" so students can start and stop containers without entering 'sudo'.
 
 ```bash
 trainee ALL=(ALL) NOPASSWD:ALL
 ```
 
-6. Install docker-ce.
+6. Install Docker.
 
 ```bash
 apt-get install \
@@ -103,7 +103,7 @@ apt-get -y install docker-ce
 
 ```
 
-7. Switch to 'trainee' user to create the Docker network, DNS bind server, and add user scripts.
+7. Switch to 'trainee' user to create the Docker network, add user scripts, and build the VNC Docker image.
 
 ```bash
 sudo su - trainee
@@ -111,20 +111,9 @@ sudo su - trainee
 
 ```
 
-8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so trainee user's prompt is green and distinguishable from VNC user (yellow) and RL node admins (red r white).
+8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so 'trainee' user shell prompt on the 'controller' VM is green. Shell prompt color for 'default' user on the VNC container is yellow. Shell prompt color for 'root' users on RL nodes is white.
 
-9. Create the Docker subnet.
-
-```bash
-mkdir resolve
-echo 'nameserver 172.18.0.20' > resolve/resolv.conf
-
-docker network create --subnet=172.18.0.0/16 rlabs
-
-
-```
-
-10. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
+9. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
 
 ```bash
 #
@@ -141,34 +130,10 @@ cp -r .ssh/ vnc_docker/ssh
 
 ```
 
-11. Create Dockerfile that will be used to build the VNC Docker image on the base VM (you only run VNC container in student instance startup scripts because the container needs to receive the instance's private IP to append to SSH alias commands).
-
-```bash
-cat << EOF > vnc_docker/Dockerfile
-## Custom Dockerfile
-FROM consol/ubuntu-xfce-vnc
-
-# Switch to root user to install additional software
-USER 0
-
-## Install SSH, DNS Utils, and the VNC user's bashrc
-RUN apt update; apt install -y ssh dnsutils;
-RUN mkdir /headless/.ssh
-COPY ./ssh /headless/.ssh
-RUN chown -R 1000 /headless/.ssh/
-COPY bashrc /headless/.bashrc
-RUN chown -R 1000 /headless/.bashrc
-
-## switch back to default user
-USER 1000
-EOF
-
-
-```
-
-12. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers as well as run and remove a Redis server container for running redis-server and redis-cli in lab 2.
-
-NOTE: VNC user prompt will be set to yellow to distinguish it from VM user 'trainee' (green) and RL node admins (red or white).
+10. Create bashrc with aliases, and a set of scripts for students so they can:
+- Start, stop, and SSH to RL nodes as if they were on machines instead of containers
+- Run a Redis server in a container for lab 2 that can be discarded when done
+- Run DNS Utils in a container to diagnose DNS on the Docker network.
 
 ```bash
 cat << EOF > vnc_docker/bashrc
@@ -283,11 +248,50 @@ chmod 755 scripts/run_dnsutils.sh
 
 ```
 
+11. Create the Docker network so you can run RL nodes, Redis Insight, and an internal DNS server on a private network.
+
+```bash
+mkdir resolve
+echo 'nameserver 172.18.0.20' > resolve/resolv.conf
+
+docker network create --subnet=172.18.0.0/16 rlabs
+
+
+```
+
+12. Build a Docker image for the VNC container. The container runs from the VM startup script when you create student instances. It receives the VM's internal IP for aliases so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
+
+```bash
+cat << EOF > vnc_docker/Dockerfile
+## Custom Dockerfile
+FROM consol/ubuntu-xfce-vnc
+
+# Switch to root user to install additional software
+USER 0
+
+## Install SSH, DNS Utils, and the VNC user's bashrc
+RUN apt update; apt install -y ssh dnsutils;
+RUN mkdir /headless/.ssh
+COPY ./ssh /headless/.ssh
+RUN chown -R 1000 /headless/.ssh/
+COPY bashrc /headless/.bashrc
+RUN chown -R 1000 /headless/.bashrc
+
+## switch back to default user
+USER 1000
+EOF
+
+cd vnc_docker
+docker build -t re-vnc .
+
+
+```
+
 13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
 
 ```bash
+cd ..
 scripts/start_north_nodes.sh
-
 scripts/start_south_nodes.sh
 
 
@@ -297,7 +301,6 @@ scripts/start_south_nodes.sh
 
 ```bash
 scripts/create_north_cluster.sh
-
 scripts/create_south_cluster.sh
 
 
@@ -311,28 +314,19 @@ docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv
 
 ```
 
-16. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
-
-```bash
-cd vnc_docker
-docker build -t re-vnc .
-
-
-```
-
 You're finished creating the base VM minus a DNS server. It's time to save your work in a GCP image so you don't have to do these steps again.
 
-17. Create a snapshot from the VM called 'rat-no-dns'.
+16. Create a snapshot from the VM called 'rat-no-dns'.
 
-18. Create an image from the snapshot called 'rat-no-dns'.
+17. Create an image from the snapshot called 'rat-no-dns'.
 
 Now it's time to configure the DNS server and test your configuration. This may change over time so it's good to start with a base image with most of the work already done and saved.
 
-19. Create an instance from the image called 'rat-with-dns'.
+18. Create a new instance called 'rat-with-dns' from the saved image.
 
-20. SSH to the VM from GCP console.
+19. SSH to the instance from GCP console.
 
-21. Switch to user trainee.
+20. Switch to user trainee.
 
 ```bash
 sudo su - trainee
@@ -340,9 +334,9 @@ sudo su - trainee
 
 ```
 
-22. Add a DNS server to the Docker network so hostnames get resolved in the private network.
+21. Add a DNS server to the Docker network so hostnames get resolved in the private network.
 
-You have two options: BIND or CoreDNS (CoreDNS does not resolve cluster names yet).
+You will have two options: BIND and CoreDNS. Only BIND works right now. CoreDNS doesn't resolve cluster names yet.
 
 BIND DNS
 
@@ -360,14 +354,14 @@ docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.co
 
 ```
 
-23. If using BIND DNS:
+22. If using BIND DNS:
 - Get the VMs public IP from GCP console
 - Point a laptop browser to https://<public-ip>:10000
 - Sign in as 'root' with 'password'
 - Configure the server according to steps here:
 https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
  
-24. Run this script to start a container with DNS Utils in it so you can test your DNS config.
+23. Run this script to start a container with DNS Utils in it so you can test your DNS config.
 
 ```bash
 ./scripts/run_dnsutils.sh
@@ -375,7 +369,7 @@ https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/
 
 ```
 
-25. Run the following commands to make sure DNS is working
+24. Run the following commands to make sure DNS is working
 
 ```bash
 nslookup n1.rlabs.org
@@ -384,11 +378,11 @@ dig @ns.rlabs.org north.rlabs.org
 dig @ns.rlabs.org south.rlabs.org
 ```
  
-26. Create a snapshot from the VM called 'rat-with-dns'.
+25. Create a snapshot from the VM called 'rat-with-dns'.
 
-27. Create an image from the snapshot called 'rat-with-dns'.
+26. Create an image from the snapshot called 'rat-with-dns'.
 
-28. Create a test instance from the image as follows:
+27. Create a test or student instance from the image as follows:
 
 Requirement  | Specification  
 ------------ | -------------
@@ -398,24 +392,29 @@ Memory | 15 GB
 Boot disk | rat-with-dns
 Disk size | 30 GB
 Network | rat-vpc
+Startup script | see below
 
-START UP SCRIPT: Runs VNC in a container so students can access admin consoles with port 80
+START UP SCRIPT: Runs VNC in a container and exposes it on port 80 so students can access admin consoles without being firewall blocked on port 8443.
 
-```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
-```
+There seem to be two different sets of 'awk' commands that work on GCP instances these days.
 
-NOTE: Here's the older script with different 'awk' commands to get the VMs IP.
+Here's the original script with one 'awk' command that still works.
 
 ```bash
 docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
 ```
 
-29. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+Here's the newer one with two 'awk' commands that works on newer and larger VMs.
 
-30. Sign in to VNC desktop with password 'trainee!'.
+```bash
+docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+```
 
-31. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
+28. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+
+29. Sign in to VNC desktop with password 'trainee!'.
+
+30. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
 
 ```bash
 n1 = 172.18.0.21
@@ -427,7 +426,7 @@ s2 = 172.18.0.32
 s3 = 172.18.0.33
 ```
 
-32. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
+31. Open Applications > Terminal (top-left) and run commands to restart RL nodes, create clusters, SSH to node VMs (containers really), or SSH to the main VM for the Software Installation lab.
 
 ```bash
 # restart RL nodes
