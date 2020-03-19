@@ -54,6 +54,7 @@ apt -y install vim
 
 update-alternatives --config editor
 
+
 ```
 
 Enter '3' to set the editor type.
@@ -62,6 +63,7 @@ Enter '3' to set the editor type.
 adduser --disabled-password --gecos "" trainee
 groupadd docker
 usermod -aG docker trainee
+
 
 ```
 
@@ -79,7 +81,7 @@ apt-get install \
     ca-certificates \
     curl \
     software-properties-common 
-Y
+
 
 ```
 
@@ -98,12 +100,14 @@ add-apt-repository \
 apt-get update
 apt-get -y install docker-ce
 
+
 ```
 
 7. Switch to 'trainee' user to create the Docker network, DNS bind server, and add user scripts.
 
 ```bash
 sudo su - trainee
+
 
 ```
 
@@ -116,6 +120,7 @@ mkdir resolve
 echo 'nameserver 172.18.0.20' > resolve/resolv.conf
 
 docker network create --subnet=172.18.0.0/16 rlabs
+
 
 ```
 
@@ -132,6 +137,7 @@ cp -r .ssh/id_rsa.pub .ssh/authorized_keys
 
 mkdir vnc_docker
 cp -r .ssh/ vnc_docker/ssh 
+
 
 ```
 
@@ -156,6 +162,8 @@ RUN chown -R 1000 /headless/.bashrc
 ## switch back to default user
 USER 1000
 EOF
+
+
 ```
 
 12. Create the bashrc and scripts for students to start, stop, and SSH to RL nodes as if they were on machines instead of containers as well as run and remove a Redis server container for running redis-server and redis-cli in lab 2.
@@ -272,13 +280,16 @@ chmod 755 scripts/create_north_cluster.sh
 chmod 755 scripts/create_south_cluster.sh
 chmod 755 scripts/run_dnsutils.sh
 
+
 ```
 
 13. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south). You run these on the base VM so students don't have to download Docker images in class (that could overload the network).
 
 ```bash
 scripts/start_north_nodes.sh
+
 scripts/start_south_nodes.sh
+
 
 ```
 
@@ -286,7 +297,9 @@ scripts/start_south_nodes.sh
 
 ```bash
 scripts/create_north_cluster.sh
+
 scripts/create_south_cluster.sh
+
 
 ```
 
@@ -295,6 +308,7 @@ scripts/create_south_cluster.sh
 ```bash
 docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always  --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
 
+
 ```
 
 16. Build the Docker image for the VNC container. You wait to run VNC containers when you create student instances because they pass in the instance IP. 
@@ -302,6 +316,7 @@ docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv
 ```bash
 cd vnc_docker
 docker build -t re-vnc .
+
 
 ```
 
@@ -322,6 +337,7 @@ Now it's time to configure the DNS server and test your configuration. This may 
 ```bash
 sudo su - trainee
 
+
 ```
 
 22. Add a DNS server to the Docker network so hostnames get resolved in the private network.
@@ -333,12 +349,14 @@ BIND DNS
 ```bash
 docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always -p 10000:10000/tcp --ip 172.18.0.20 rahimre/redislabs-training-bind
 
+
 ```
 
 CoreDNS - Create Corefile and rlabs.db, put them in /home/trainee/coredns/, and run:
 
 ```bash
 docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
+
 
 ```
 
@@ -353,6 +371,7 @@ https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/
 
 ```bash
 ./scripts/run_dnsutils.sh
+
 
 ```
 
