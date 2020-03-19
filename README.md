@@ -292,11 +292,13 @@ cd vnc_docker
 docker build -t re-vnc .
 ```
 
-You're finished creating the base VM minus a DNS server.
+You're finished creating the base VM minus a DNS server. It's time to save your work in a GCP image so you don't have to do these steps again.
 
 17. Create a snapshot from the VM called 'rat-no-dns'.
 
 18. Create an image from the snapshot called 'rat-no-dns'.
+
+Now it's time to configure the DNS server and test your configuration. This may change over time so it's good to start with a base image with most of the work already done and saved.
 
 19. Create an instance from the image called 'rat-with-dns'.
 
