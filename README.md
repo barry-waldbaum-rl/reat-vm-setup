@@ -1,25 +1,34 @@
 # Admin Training VM Setup - Step 1
 
-Setup and test a base VM that runs:
-- Docker network
-- VNC container
-- DNS container
-- 6 Redis Labs node containers that appear to students as VMs.
+Setup a base VM with the following:
+- A VNC desktop
+- A private Docker network.
 
-Each student gets a VM with 6 RL nodes running in 2 clusters (north and south). Each node runs in a container but we make it look like a separate VM with its own IP. Each student gets a VNC desktop to their main VM where they can open browser sessions to admin consoles and SSH terminals to node shells and run rladmin.
+Then setup the following containers on the Docker network:
+- A DNS server
+- 6 Redis Enterprise nodes
+- DNS Utils
+- Redis Insight.
 
-The DNS and VNC containers need to be configured as follows:
-- DNS - https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
-- VNC - https://docs.google.com/document/d/1X8K2jZTwBLr_jG9a01-u_dxRrTwb2URNCy0zXoQZUG4/edit#
+Save your work along the way in VM and Docker images for easy retrieval and reconfig.
 
-Build the following:
-- Base VM, snapshot, and image with no DNS server
-- Base VM, snapshot, and image with DNS
-- Test instance with VNC.
+Provide a Python script to trainers and Redis Labs employees so they can snip up multiple VMs.
 
-Steps:
+Each user gets a VM with the ability to run 6 Redis Enterprise nodes in 2 clusters on a private network. Nodes look like they run on VMs, but they really run in containers.
 
-1. Create a VPC with subnet 172.18.0.0/16 in the region where you want to run VMs.
+A user accesses a VM with a VNC desktop running in a browser on port 80. All users need is the VM public IP and VNC password.
+
+From there, users can:
+- Configure and investigate DNS
+- Start and stop nodes
+- Join nodes in clusters
+- Add databases
+- Access databases from command line or Redis Insight
+- Investigate failover of nodes, databases, and cluster.
+
+Set up:
+
+1. Create a VPC in GCP with subnet 172.18.0.0/16 in the region where you want to run VMs.
 
 Requirement | Specification
 ------------|--------------
@@ -34,7 +43,7 @@ Subnet IP Address Range | 172.18.0.0/16
   
 Requirement  | Specification  
 ------------ | -------------
-Name | admin-training-step-1
+Name | admin-training-image-step-1
 CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
@@ -111,7 +120,7 @@ sudo su - trainee
 
 ```
 
-8. Edit trainee's .bashrc file to uncomment the line '#force_color_prompt' so 'trainee' user shell prompt on the 'controller' VM is green. Shell prompt color for 'default' user on the VNC container is yellow. Shell prompt color for 'root' users on RL nodes is white.
+8. Edit trainee's .bashrc file and uncomment the line '#force_color_prompt'. This sets the prompt to 'green'. Shell prompt color for the VNC user is 'yellow'. Shell prompt color for 'root' users on Redis Enterprise nodes is 'white'. This way users can tell them apart.
 
 9. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
 
@@ -130,10 +139,10 @@ cp -r .ssh/ vnc_docker/ssh
 
 ```
 
-10. Create bashrc with aliases, and a set of scripts for students so they can:
-- Start, stop, and SSH to RL nodes as if they were on machines instead of containers
-- Run a Redis server in a container for lab 2 that can be discarded when done
-- Run DNS Utils in a container to diagnose DNS on the Docker network.
+10. Create bashrc with aliases so users can:
+- Start, stop, and SSH to nodes as if they were on VMs
+- Run Redis in a separate container for lab 2
+- Run DNS Utils.
 
 ```bash
 cat << EOF > vnc_docker/bashrc
@@ -287,40 +296,48 @@ docker build -t re-vnc .
 
 ```
 
-You're finished creating the base VM minus a DNS server. Now it's time to configure the DNS server and test your configuration. This may change over time so it's good to save your work in a GCP image so you don't have to do these steps again.
+You have the following:
+- A Docker network
+- A vanilla VNC Docker image.
 
-13. Create a snapshot from the VM called 'admin-training-step-1'.
+Save your work.
 
-14. Create an image from the snapshot called 'admin-training-step-1'.
+13. Create a snapshot from the VM called 'admin-training-image-step-1'.
 
+14. Create an image from the snapshot called 'admin-training-image-step-1'.
 
 
 # Admin Training VM Setup - Step 2
 
-This image has the following on it:
-- Docker network 'rlabs'
-- Docker images 'console/vnc' and 're-vnc'
-- No Docker containers running yet.
+You have the following:
+- A Docker network
+- A vanilla VNC Docker image.
 
-15. Create a new VM called 'admin-training-step-2' from image 'admin-training-step-1' including one of the following startup scripts. Each script starts a VNC desktop so you can configure DNS using a GUI. 
+Now configure a vanilla DNS server to resolve Redis Enterprise host and cluster names on the Docker  network, and save the configured DNS server to a remote Docker image and the VM to a GCP image for easy retrieval and reconfig.
 
-NOTE: The script also passes the VMs internal IP to the desktop so students can access the VM and start and stop RedisLabs containers. However, VMs sometimes report their internal IPs in slightly different format. So there are two scripts that use slightly different 'awk' filters. One of them will work. If you happen to get a VM that uses the other filter, you'll find out in a later step and re-run this step.
+1. Configure a new VM called 'admin-training-image-step-2' from your saved image 'admin-training-image-step-1'.
 
-Here's the original filter that still works.
+2. Add the following VM startup script to run VNC. You use VNC to configure DNS using a GUI.
+
+Scripts also pass in the VMs internal IP to VNC so users can SSH to the base VM and start and stop node containers.
+
+Sometimes VMs report internal IPs in different formats. An alternative script is provided for the other format. If the first one doesn't work, you'll find out in a later step and have to restart a new VM using the other script.
+
+Here's the original script that usually works.
 
 ```bash
 docker run --name controller  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname controller.rlabs.org --ip 172.18.0.2 -p 80:6901  re-vnc
 ```
 
-Here's the newer one with a second 'awk' filter.
+Here's the second script (this one has a 2 'awk' filters).
 
 ```bash
 docker run --name controller -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -e VNC_PW=trainee! --net rlabs --hostname controller --ip 172.18.0.2  -p 80:6901  re-vnc
 ```
 
-Perform the following steps to configure the DNS server so it can resolve hostnames on the private Docker network. At the end, you commit the server's changes to GCR so you can easily modify it later if needed.
+Configure DNS.
 
-16. Get the VMs public IP from GCP console and point your laptop browser to the IP on port 80.
+2. Get the VMs public IP from GCP console and point your laptop browser to the IP on port 80.
 
 17. Sign in to VNC desktop with password 'trainee!'.
 
@@ -342,7 +359,7 @@ alias
 
 ```
 
-NOTE: SSH commands allow students to transparently SSH to the base VM and log in to Redis Enterprise container terminals as if they were SSHing to VMs. 
+SSH commands allow students to transparently SSH to the base VM and log in to Redis Enterprise container terminals as if they were SSHing to VMs. 
 
 23. Run the following command to SSH to the base VM. From there, you can run the vanilla DNS server as a container and attach it to the Docker network.
 
@@ -405,9 +422,14 @@ nslookup s1.rlabs.org
 
 
 ```
-You should get n1 = 172.18.0.21 and s1 = 172.18.0.31.
 
-29. If not, run the following commands to stop and remove the DNS container. Then restart the vanilla DNS server in a container and reconfigure and test until it works.
+You should get:
+- n1 = 172.18.0.21
+- s1 = 172.18.0.31
+
+29. If not, run the following commands to stop and remove the DNS container. Then restart the vanilla DNS server in a container as before, reconfigure it and test again until it works.
+
+NOTE: Skip these commands if it's working.
 
 ```bash
 exit
@@ -418,53 +440,69 @@ docker rm dns
 
 ```
 
-You're on the VM shell.
+Once working, commit changes to a Docker image and upload it to GCR so you or anyone else can use it. To do this, SSH to the VM from GCP console and perform the following steps.
 
-29. Once working, stop and take a Docker image of the changes to the DNS server container so you're work can be saved and made available to others at RedisLabs. You'll first commit the changes to the local Docker repo. Then you'll upload that image to the GCR repo.
-
-30. Using the second way to access your VM, SSH to it in GCP console. This signs you in with RedisLabs employee credentials so you can upload the Docker image to GCR.
-
-31. To do this, you'll need to:
-- Commit container changes to the local Docker repo
-- Stop the original DNS server container
-- Rerun the command above that you used to start the default DNS server, substituting the Docker image for the new one in the local repo
-- Retest DNS to make sure the new DNS Docker image works.
-- Get a service account JSON key and apply it so Docker can authenticate to GCR and upload your new image to the remote repo
-- Upload the new image to the GCR repo.
-
-See instructions here for details:
-https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
-
-Now you'll test the new DNS Docker image download from GCR to make sure your DNS changes work in a new VM.
-
-32. Start a new VM using the same steps as before for starting 'rat-dns'. Make sure to include the startup script to run the VNC container.
-
-33. Use the same command you used before to start the default DNS BIND server, substituting in the new GCR Docker image 'gcr.io/redislabs-university/rat-dns' for 'sameersbn/bind'.
-
-34. Rerun your DNS Utils tests above.
-
-If it works, you're ready to take a backup of your work into another GCP VM snapshot and image so you don't have to configure DNS anymore unless it changes. This step is a bit tricky because you need to remove the VNC container so you can re-add when you start a new VM with that VMs internal IP (otherwise you'll try to use the old VM's IP which won't work).
-
-35. From the terminal you SSH'd in from GCP console, stop and remove the VNC container.
+30. Run the following commands to commit changes to your local repo and tag the image as 'admin-training-dns' and 'gcr.io/redislabs-university/admin-training-dns'
 
 ```bash
-docker stop controller
-docker rm controller
+sudo docker commit dns admin-training-dns
+sudo docker tag admin-training-dns gcr.io/redislabs-university/admin-training-dns
 
 
 ```
 
-36. Make sure the container is no longer present.
+The next step requires Docker have 'write' access to the GCR repo 'redislabs-university'.
+
+If not, do this to apply a service account JSON key to Docker.
 
 ```bash
-docker ps -a
+sudo docker push gcr.io/redislabs-university/admin-training-dns 
 
 
 ```
 
-37. Create a snapshot of the VM called 'rat-dns-ready'.
+Replace the DNS container and local images with the GCR image and test it.
 
-38. Create an image from the snapshot called 'rat-dns-ready'.
+30. Remove the DNS container and local images.
+
+```bash
+sudo docker stop dns
+sudo docker rm dns
+sudo docker rmi sameersbn/bind
+sudo docker rmi admin-training-dns
+
+
+```
+
+30. Run the DNS server from the GCR image.
+
+```bash
+docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
+
+
+```
+
+30. Test that DNS still works.
+
+You have the following:
+- Docker network
+- Configured DNS Docker image.
+
+Save your work.
+
+13. Create a snapshot of the VM called 'admin-training-image-step-2'.
+
+14. Create an image from the snapshot called 'admin-training-image-step-2'.
+
+# Admin Training VM Setup - Step 3
+
+You have the following:
+- Docker network
+- Configured DNS Docker image.
+
+Now you 
+
+
 
 39. Start a new VM from the 'rat-dns-done' image and re-enter the startup script from before to run the VNC container.
 
