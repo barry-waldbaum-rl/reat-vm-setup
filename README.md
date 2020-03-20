@@ -185,9 +185,9 @@ cat << EOF > scripts/start_north_nodes.sh
 docker kill n1; docker rm n1;
 docker kill n2; docker rm n2;
 docker kill n3; docker rm n3;
-docker run -d --cap-add=ALL --name n1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n1.rlabs.org --net rlabs --ip 172.18.0.21 redislabs/redis
-docker run -d --cap-add=ALL --name n2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n2.rlabs.org --net rlabs --ip 172.18.0.22 redislabs/redis
-docker run -d --cap-add=ALL --name n3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname n3.rlabs.org --net rlabs --ip 172.18.0.23 redislabs/redis
+docker run --name n1 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname n1.rlabs.org --ip 172.18.0.21 redislabs/redis
+docker run --name n2 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname n2.rlabs.org --ip 172.18.0.22 redislabs/redis
+docker run --name n3 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname n3.rlabs.org --ip 172.18.0.23 redislabs/redis
 docker exec --user root n1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -198,9 +198,9 @@ cat << EOF > scripts/start_south_nodes.sh
 docker kill s1; docker rm s1;
 docker kill s2; docker rm s2;
 docker kill s3; docker rm s3;
-docker run -d --cap-add=ALL --name s1 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s1.rlabs.org --net rlabs --ip 172.18.0.31 redislabs/redis
-docker run -d --cap-add=ALL --name s2 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s2.rlabs.org --net rlabs --ip 172.18.0.32 redislabs/redis
-docker run -d --cap-add=ALL --name s3 -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --hostname s3.rlabs.org --net rlabs --ip 172.18.0.33 redislabs/redis
+docker run --name s1 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname s1.rlabs.org --ip 172.18.0.31  redislabs/redis
+docker run --name s2 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname s2.rlabs.org --ip 172.18.0.32 redislabs/redis
+docker run --name s3 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname s3.rlabs.org --ip 172.18.0.33 redislabs/redis
 docker exec --user root s1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -305,13 +305,13 @@ NOTE: There seems to be two different sets of 'awk' commands that work on GCP in
 Here's the original script with one 'awk' command that still works.
 
 ```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+docker run --name controller  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname controller.rlabs.org --ip 172.18.0.2 -p 80:6901  re-vnc
 ```
 
 Here's the newer one with two 'awk' commands that works on newer and larger VMs.
 
 ```bash
-docker run -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -p 80:6901 -e VNC_PW=trainee! --net rlabs --ip 172.18.0.2  --name controller -h controller.rlabs.org -d re-vnc
+docker run --name controller -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -e VNC_PW=trainee! --net rlabs --hostname controller --ip 172.18.0.2  -p 80:6901  re-vnc
 ```
 
 There are two ways to access the VM at this point and you'll use them both for different reasons. First, you'll use the VNC desktop to start and configure the DNS server running in a container. Second, you'll SSH to VM from GCP console to save the modified DNS container and push it up to GCR (Google Container Registry). It helps to save our DNS configuration work and make it available to everyone is RedisLabs so others can reconfigure the lab environment if they need to.
@@ -361,7 +361,7 @@ Below are steps to run a BIND DNS server or a CoreDNS server. Only BIND works ri
 BIND DNS
 
 ```bash
-docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp sameersbn/bind
+docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  sameersbn/bind
 
 
 ```
@@ -369,7 +369,7 @@ docker run --name bind -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf 
 CoreDNS - Create Corefile and rlabs.db, put them in /home/trainee/coredns/, and run:
 
 ```bash
-docker run --name coredns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -h ns.rlabs.org --net rlabs --restart=always  -v /home/trainee/coredns/:/root/ --ip 172.18.0.20 coredns/coredns -conf /root/Corefile
+docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -v /home/trainee/coredns/:/root/ --restart=always --net rlabs -hostname ns.rlabs.org --ip 172.18.0.20  coredns/coredns -conf /root/Corefile
 
 
 ```
@@ -542,7 +542,7 @@ redis-cli -p 12000 -h north.rlabs.org
 
 ```bash
 ssh_installer
-docker run -d --name insight -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always  --hostname insight.rlabs.org --net rlabs --ip 172.18.0.4  redislabs/redisinsight
+docker run --name insight -d -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname insight.rlabs.org --ip 172.18.0.4  redislabs/redisinsight
 
 
 ```
