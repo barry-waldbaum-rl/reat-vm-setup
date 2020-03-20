@@ -1,4 +1,4 @@
-# REAT VM Setup
+# Admin Training VM Setup - Step 1
 
 Setup and test a base VM that runs:
 - Docker network
@@ -23,9 +23,9 @@ Steps:
 
 Requirement | Specification
 ------------|--------------
-Name | rat-vpc
+Name | admin-training-vpc
 Subnet Creation Mode | Custom
-Subnet Name | rat-subnet
+Subnet Name | admin-training-subnet
 Subnet IP Address Range | 172.18.0.0/16
 
 2. Create a firewall rule that allows ingress on all ports from all sources (0.0.0.0/0) to all targets.
@@ -34,7 +34,7 @@ Subnet IP Address Range | 172.18.0.0/16
   
 Requirement  | Specification  
 ------------ | -------------
-Name | rat-no-dns
+Name | admin-training-step-1
 CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
@@ -289,42 +289,54 @@ docker build -t re-vnc .
 
 You're finished creating the base VM minus a DNS server. Now it's time to configure the DNS server and test your configuration. This may change over time so it's good to save your work in a GCP image so you don't have to do these steps again.
 
-13. Create a snapshot from the VM called 'rat-no-dns'.
+13. Create a snapshot from the VM called 'admin-training-step-1'.
 
-14. Create an image from the snapshot called 'rat-no-dns'.
+14. Create an image from the snapshot called 'admin-training-step-1'.
+
+
+
+# Admin Training VM Setup - Step 2
 
 This image has the following on it:
 - Docker network 'rlabs'
 - Docker images 'console/vnc' and 're-vnc'
 - No Docker containers running yet.
 
-15. Create a new VM called 'rat-dns' from the image 'rat-no-dns' with the following startup script. This starts the VNC container so you can sign in to the desktop and configure the DNS server with its WebMin UI.
+15. Create a new VM called 'admin-training-step-2' from image 'admin-training-step-1'.
 
-NOTE: There seems to be two different sets of 'awk' commands that work on GCP instances these days.
+It has the following startup script. It starts as a vanilla VNC container with no admin training layout. From here, you sign in to the desktop and configure the vanilla DNS server using Bind's WebMin UI.
 
-Here's the original script with one 'awk' command that still works.
+NOTE: GCP sometimes spins up VMs with different NIC output. Each requires a slightly different 'awk' filter. 
+
+Here's the original filter that still works.
 
 ```bash
 docker run --name controller  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname controller.rlabs.org --ip 172.18.0.2 -p 80:6901  re-vnc
 ```
 
-Here's the newer one with two 'awk' commands that works on newer and larger VMs.
+Here's the newer one with a second 'awk' filter.
 
 ```bash
 docker run --name controller -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -e VNC_PW=trainee! --net rlabs --hostname controller --ip 172.18.0.2  -p 80:6901  re-vnc
 ```
 
-There are two ways to access the VM at this point and you'll use them both for different reasons. First, you'll use the VNC desktop to start and configure the DNS server running in a container. Second, you'll SSH to VM from GCP console to save the modified DNS container and push it up to GCR (Google Container Registry). It helps to save our DNS configuration work and make it available to everyone is RedisLabs so others can reconfigure the lab environment if they need to.
+You'll use VNC desktop to configure DNS.
 
-16. Point your laptop browser to the VM's public IP on port 80. You can get the public IP from GCP admin console.
+And you'll SSH to the VM from GCP to save the DNS container and push it up to GCR.
+
+This makes it easy to modify DNS later if you need to.
+
+To use VNC desktop:
+
+16. Get the VMs public IP from GCP console
+
+17. Point your laptop browser to the IP
 
 17. Sign in to VNC desktop with password 'trainee!'.
 
 18. Open a terminal shell window.
 
-This puts you in a shell running in the VNC container. It's on the 'rlabs' Docker network and cannot start and stop other containers on the network. For that, you need to SSH back down to base VM as the 'trainee' user. This user has sudo permissions to manage containers on the Docker network. You need to start the default, empty DNS Bind server in a container running on the Docker network.
-
-19. Run the following command to make sure the VMs internal IP address got set properly.
+19. Run the following command to make sure the VMs internal IP is set and available. If not, start another VM with the other 'awk' filter.
 
 ```bash
 echo $INT_IP
@@ -332,9 +344,7 @@ echo $INT_IP
 
 ```
 
-20. If it doesn't match the interal IP address listed for the VM in the GCP console, you'll have to start another VM using the other startup script with different 'awk' commands.
-
-21. Run the following command to see the list of alias commands you and students can run from the VNC terminal (host named 'controller').
+21. Run the following command to see the list of alias commands you and students can run from the VNC desktop.
 
 ```bash
 alias
@@ -342,9 +352,9 @@ alias
 
 ```
 
-22. Make sure the VMs internal IP is entered correctly in the alias commands as well. 
+NOTE: SSH commands allow you and students to transparently SSH to the base VM and open terminals to RedisLabs containers as if using VMs. 
 
-23. Run the following command to SSH down to the base VM running the Docker network and containers (at this point, VNC is the only running container).
+23. Run the following command to SSH to the base VM.
 
 ```bash
 ssh_installer
@@ -352,7 +362,19 @@ ssh_installer
 
 ```
 
-24. Enter the following command to run a default DNS Bind server on the Docker network.
+24. Run the following command to see the list of Docker containers running on the VM.
+
+```bash
+docker ps
+
+
+```
+
+At this point, VNC is the only container.
+
+24. Run the following command to run a vanilla Bind DNS server on the VM and attached to the private Docker network.
+
+STOP HERE
 
 Perform the following steps to configure the DNS server so it can resolve hostnames on the private Docker network.
 
