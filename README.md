@@ -302,11 +302,9 @@ This image has the following on it:
 - Docker images 'console/vnc' and 're-vnc'
 - No Docker containers running yet.
 
-15. Create a new VM called 'admin-training-step-2' from image 'admin-training-step-1'.
+15. Create a new VM called 'admin-training-step-2' from image 'admin-training-step-1' including one of the following startup scripts. Each script starts a VNC desktop so you can configure DNS using a GUI. 
 
-It has the following startup script. It starts as a vanilla VNC container with no admin training layout. From here, you sign in to the desktop and configure the vanilla DNS server using Bind's WebMin UI.
-
-NOTE: GCP sometimes spins up VMs with different NIC output. Each requires a slightly different 'awk' filter. 
+NOTE: The script also passes the VMs internal IP to the desktop so students can access the VM and start and stop RedisLabs containers. However, VMs sometimes report their internal IPs in slightly different format. So there are two scripts that use slightly different 'awk' filters. One of them will work. If you happen to get a VM that uses the other filter, you'll find out in a later step and re-run this step.
 
 Here's the original filter that still works.
 
@@ -320,17 +318,9 @@ Here's the newer one with a second 'awk' filter.
 docker run --name controller -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -e VNC_PW=trainee! --net rlabs --hostname controller --ip 172.18.0.2  -p 80:6901  re-vnc
 ```
 
-You'll use VNC desktop to configure DNS.
+Perform the following steps to configure the DNS server so it can resolve hostnames on the private Docker network. At the end, you commit the server's changes to GCR so you can easily modify it later if needed.
 
-And you'll SSH to the VM from GCP to save the DNS container and push it up to GCR.
-
-This makes it easy to modify DNS later if you need to.
-
-To use VNC desktop:
-
-16. Get the VMs public IP from GCP console
-
-17. Point your laptop browser to the IP
+16. Get the VMs public IP from GCP console and point your laptop browser to the IP on port 80.
 
 17. Sign in to VNC desktop with password 'trainee!'.
 
@@ -344,7 +334,7 @@ echo $INT_IP
 
 ```
 
-21. Run the following command to see the list of alias commands you and students can run from the VNC desktop.
+21. Run the following command to see the list of alias commands you and students can run from VNC.
 
 ```bash
 alias
@@ -352,12 +342,12 @@ alias
 
 ```
 
-NOTE: SSH commands allow you and students to transparently SSH to the base VM and open terminals to RedisLabs containers as if using VMs. 
+NOTE: SSH commands allow students to transparently SSH to the base VM and log in to Redis Enterprise container terminals as if they were SSHing to VMs. 
 
-23. Run the following command to SSH to the base VM.
+23. Run the following command to SSH to the base VM. From there, you can run the vanilla DNS server as a container and attach it to the Docker network.
 
 ```bash
-ssh_installer
+ssh_base-vm
 
 
 ```
@@ -370,17 +360,13 @@ docker ps
 
 ```
 
-At this point, VNC is the only container.
+So far, VNC's the only one.
 
-24. Run the following command to run a vanilla Bind DNS server on the VM and attached to the private Docker network.
+24. Run one of the following commands to start a vanilla DNS server in a container on the VM and attach it to the private Docker network.
 
-STOP HERE
+Right now, only Bind DNS setup works.
 
-Perform the following steps to configure the DNS server so it can resolve hostnames on the private Docker network.
-
-Below are steps to run a BIND DNS server or a CoreDNS server. Only BIND works right now. CoreDNS doesn't resolve cluster names yet.
-
-BIND DNS
+Bind DNS
 
 ```bash
 docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  sameersbn/bind
@@ -396,45 +382,43 @@ docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -
 
 ```
 
-25. Using BIND DNS:
-- Open a Chrome browser on the VNC desktop
-- Point it to the address: https://172.18.0.20:10000
+25. Do the following to configure Bind DNS:
+- Open a Chrome browser on VNC desktop
+- Point it to the address: https://172.18.0.20:10000 (this is WebMin, Bind DNSs UI)
 - Sign in as 'root' with 'password'
 - Configure the server according to steps here:
 https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
-  
-Now you should have a DNS server configured to resolve host and cluster names.
 
-26. Run the following command to return the VNC container on Docker network. 
+26. Return to VNC and test DNS setup 
 
 ```bash
 exit
-
-
-```
-
-27. Run this script to start a container with DNS Utils in it so you can test your DNS config. This script is run from the default user in the VNC container, which transparently SSH's down to the base VM as the 'trainee' user and starts the container there. This is a common practice that students will use to start and stop containers on the Docker network so it looks to them like they're using VMs instead of containers.
-
-```bash
 ./scripts/run_dnsutils.sh
 
-
 ```
 
-28. Run the following commands to make sure DNS is working
+28. Run these commands and make sure hostnames resolve (you can't test cluster names until nodes are running and joined to a cluster).
 
 ```bash
 nslookup n1.rlabs.org
 nslookup s1.rlabs.org
-dig @ns.rlabs.org north.rlabs.org
-dig @ns.rlabs.org south.rlabs.org
+
+
+```
+You should get n1 = 172.18.0.21 and s1 = 172.18.0.31.
+
+29. If not, run the following commands to stop and remove the DNS container. Then restart the vanilla DNS server in a container and reconfigure and test until it works.
+
+```bash
+exit
+ssh_base-vm
+docker stop dns
+docker rm dns
 
 
 ```
 
-If working, these commands should resolve to 172.18.0.21 for 'n1', and 'n1', 'n2', and 'n3' for 'north'.
-
-If not, you'll need to stop and remove the DNS server container and start again until you get it working.
+You're on the VM shell.
 
 29. Once working, stop and take a Docker image of the changes to the DNS server container so you're work can be saved and made available to others at RedisLabs. You'll first commit the changes to the local Docker repo. Then you'll upload that image to the GCR repo.
 
