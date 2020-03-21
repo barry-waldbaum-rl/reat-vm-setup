@@ -150,12 +150,18 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-alias ssh_installer="ssh trainee@\$INT_IP"
+alias ssh_base-vm="ssh trainee@\$INT_IP"
+
+alias run_dnsutils="ssh -t trainee@\$INT_IP ./scripts/run_dnsutils.sh "
 
 alias start_redis='ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash'
 alias stop_redis='ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
 
-alias run_dnsutils="ssh -t trainee@\$INT_IP ./scripts/run_dnsutils.sh "
+alias start_north_nodes="ssh -t trainee@\$INT_IP ./scripts/start_north_nodes.sh "
+alias start_south_nodes="ssh -t trainee@\$INT_IP ./scripts/start_south_nodes.sh "
+
+alias create_north_cluster="ssh -t trainee@\$INT_IP ./scripts/create_north_cluster.sh "
+alias create_south_cluster="ssh -t trainee@\$INT_IP ./scripts/create_south_cluster.sh "
 
 alias ssh_n1="ssh -t trainee@\$INT_IP docker exec -it n1 bash "
 alias ssh_n2="ssh -t trainee@\$INT_IP docker exec -it n2 bash "
@@ -167,25 +173,16 @@ alias ssh_s3="ssh -t trainee@\$INT_IP docker exec -it s3 bash "
 alias start_n1="ssh -t trainee@\$INT_IP docker start n1 "
 alias start_n2="ssh -t trainee@\$INT_IP docker start n2 "
 alias start_n3="ssh -t trainee@\$INT_IP docker start n3 "
-
-alias stop_n1="ssh -t trainee@\$INT_IP docker stop n1 "
-alias stop_n2="ssh -t trainee@\$INT_IP docker stop n2 "
-alias stop_n3="ssh -t trainee@\$INT_IP docker stop n3 "
-
 alias start_s1="ssh -t trainee@\$INT_IP docker start s1 "
 alias start_s2="ssh -t trainee@\$INT_IP docker start s2 "
 alias start_s3="ssh -t trainee@\$INT_IP docker start s3 "
 
+alias stop_n1="ssh -t trainee@\$INT_IP docker stop n1 "
+alias stop_n2="ssh -t trainee@\$INT_IP docker stop n2 "
+alias stop_n3="ssh -t trainee@\$INT_IP docker stop n3 "
 alias stop_s1="ssh -t trainee@\$INT_IP docker stop s1 "
 alias stop_s2="ssh -t trainee@\$INT_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$INT_IP docker stop s3 "
-
-alias start_north_nodes="ssh -t trainee@\$INT_IP ./scripts/start_north_nodes.sh "
-alias start_south_nodes="ssh -t trainee@\$INT_IP ./scripts/start_south_nodes.sh "
-
-alias create_north_cluster="ssh -t trainee@\$INT_IP ./scripts/create_north_cluster.sh "
-alias create_south_cluster="ssh -t trainee@\$INT_IP ./scripts/create_south_cluster.sh "
-
 EOF
 
 mkdir scripts
