@@ -515,7 +515,7 @@ It includes:
 Add the startup script to run VNC again.
 
 ```bash
-docker run --name vanilla-vnc  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  vanilla-vnc
+docker run --name vnc  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  vanilla-vnc
 ```
 
 Configure DNS.
@@ -604,11 +604,15 @@ https://s3:8443
 
 13. Create a database from node 'n1' listening on port '12000'.
 
-48. Run the following in the terminal to SSH to node 'n2'.
+14. Run the following in a terminal to SSH to node 'n2'.
 
-49. Run the following and make sure the proxy is listening on 'node:1'.
+```bash
+ssh_n2
 
-50. Run the following to connect to the redis-cli using DNS resolution:
+
+```
+
+15. Connect redis-cli to the database from node n2.
 
 ```bash
 redis-cli -p 12000 -h north.rlabs.org
@@ -616,38 +620,75 @@ redis-cli -p 12000 -h north.rlabs.org
 
 ```
 
-51. Set a key in the database.
+16. Set a key in the database
+
+Test DNS lookup and database connection from Redis Insight.
+
+17. Open another tab in Chrome and point it the Redis Insight at:
+
+```bash
+http://insight:8001
+```
+
+18. Click Add Database to add the database to Redis Insight and enter the following:
+Name | anything
+Host | north.rlabs.org
+Port | 12000
+Password | blank
+
+19. Make sure it connects.
+
+20. Click Browse to see the key you set.
+
+Now you know DNS, Redis Insight, and your node and cluster scripts work.
+
+21. Open another tab in Chrome and point it to the DNS UI and sign in with 'root' and 'password'.
+
+```bash
+https://172.18.0.20:10000
+
+```
+
+22. Save the 8 tabs as bookmarks and save the pages to open on startup to the current pages and then fix the setting to always open like that.
+
+23. Follow steps here to set up the VNC desktop with a Redis background image, 2 workspaces, and launchers for opening Chrome and shell terminals in specific locations and opening tabs to node command line shells.
+
+24. Stop the nodes before saving your work.
+
+```bash
+stop_n1
+stop_n2
+stop_n3
+stop_s1
+stop_s2
+stop_s3
 
 
+```
 
-Test that Redis Insight can connect to the database using DNS as well.
+Save your work.
 
-53. Point the Chrome browser on the VNC desktop to http://insight:8001.
+24. Create a snapshot from the VM called 'admin-training-image-step-3'.
 
-54. Accept the terms and click Add Database.
+25. Create an image from the snapshot called 'admin-training-image-step-3'.
 
-55. Give the DB any name
+You're ready to create user instances.
 
-56. Enter hostname: north.rlabs.org or redis-12000.north.rlabs.org
+You have the following:
+- A Docker network
+- A configured VNC Docker container
+- A configured DNS container and GCR image.
 
-57. Enter port: 12000
+When creating user instances remember to include the startup script which runs the VNC container and name your instances 'base-vm-01', 'base-vm-02', and so on.
 
-58. Click connect.
-
-59. Click Browse - you should see the key you created.
-
-Now you done and ready to create student instances, but first take another VM snapshot and image to save all your work.
-
-60. Stop and remove the VNC container.
-
-61. Take another VM snapshot and image called 'rat-ready'.
-
-'rat-ready' is the image you'll use to creeate student instances.
-
-When creating student instances remember to include the startup scripts which runs the VNC container.
+```bash
+docker run --name vnc -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  vanilla-vnc
+```
 
 
-Here are some additional commands you can run as the 'default' user on the VNC terminal.
+# Admin Training VM Setup - Additional Testing
+
+Here are some more commands you can test when nodes are running .
 
 ```bash
 # SSH to RL nodes so you can run rladmin
@@ -672,18 +713,12 @@ start_redis
 exit
 stop_redis
 
-# SSH to the main VM as user 'trainee' with sudo/root permissions
-ssh_installer
-sudo docker images
-sudo docker ps
-sudo docker network list
-sudo docker network inspect rlabs
-sudo docker image inspect redislabs/redis
+# SSH to the base VM and check Docker info
+ssh_base-vm
+docker images
+docker ps
+docker network list
+docker network inspect rlabs
+docker image inspect redislabs/redis
 exit
 ```
-
-If you want to add dnsutils to test DNS on the rlabs network run
-```bash
-run_dnsutils
-```
-
