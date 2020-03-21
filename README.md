@@ -545,7 +545,23 @@ nslookup n1.rlabs.org
 
 ```
 
-43. Run scripts to start Redis Labs nodes running in their containers (3 north, 3 south).
+Before configuring VNC, add Redis Insight and make sure:
+- Nodes start and join clusters
+- DNS resolves cluster names
+- Databases get accessed by cluster names from command line and Insight.
+
+
+8. Add Redis Insight as a container so students can view database contents in a GUI.
+
+```bash
+exit
+ssh_base-vm
+docker run --name insight -d -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname insight.rlabs.org --ip 172.18.0.4  redislabs/redisinsight
+
+
+```
+
+9. Start all Redis Enterprise nodes in containers (3 north, 3 south).
 
 ```bash
 start_north_nodes
@@ -554,39 +570,39 @@ start_south_nodes
 
 ```
 
-44. Run scripts to build Redis Labs clusters from their nodes.
+10. Build Redis Enterprise clusters from nodes.
 
 ```bash
-create_north_cluster.sh
-create_south_cluster.sh
+create_north_cluster
+create_south_cluster
 
 
 ```
 
-45. Run the following to make sure DNS is resolving cluster names.
+11. Run the following to make sure DNS is resolving cluster names.
 
-NOTE: Cluster names will not resolve until you start the nodes and create the cluster because pDNS needs to be running.
+NOTE: Cluster names only resolve in DNS after you join nodes to clusters (pDNS needs to run).
 
 ```bash
+run_dnsutils
 dig @ns.rlabs.org north.rlabs.org
 dig @ns.rlabs.org south.rlabs.org
 
 
 ```
 
-46. In VNC desktop, open Chrome browser and point it to RL admin consoles on port 8443. You can use either hostnames or IPs.
+12. Open Chrome browser in VNC and point it to admin consoles on port 8443 as follows:
 
 ```bash
-n1 = 172.18.0.21
-n2 = 172.18.0.22
-n3 = 172.18.0.23
-
-s1 = 172.18.0.31
-s2 = 172.18.0.32
-s3 = 172.18.0.33
+https://n1:8443
+https://n2:8443
+https://n3:8443
+https://s1:8443
+https://s2:8443
+https://s3:8443
 ```
 
-47. Create a database from node 'n1' listening on port '12000'.
+13. Create a database from node 'n1' listening on port '12000'.
 
 48. Run the following in the terminal to SSH to node 'n2'.
 
@@ -602,14 +618,7 @@ redis-cli -p 12000 -h north.rlabs.org
 
 51. Set a key in the database.
 
-52. Run the Redis Insight utility app as a container so students can view database contents in a GUI.
 
-```bash
-ssh_installer
-docker run --name insight -d -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname insight.rlabs.org --ip 172.18.0.4  redislabs/redisinsight
-
-
-```
 
 Test that Redis Insight can connect to the database using DNS as well.
 
