@@ -315,7 +315,7 @@ You have the following:
 
 Configure a DNS server to resolve host and cluster names on the Docker network.
 
-1. Create a new VM called 'admin-training-image-step-2' from image 'admin-training-image-step-1'.
+1. Create a new VM called 'admin-training-step-2' from image 'admin-training-image-step-1'.
 
 Add startup script below to run VNC so you can configure DNS using a GUI.
 
