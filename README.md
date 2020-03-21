@@ -291,7 +291,7 @@ USER 1000
 EOF
 
 cd vnc_docker
-docker build -t re-vnc .
+docker build -t vanilla-vnc .
 
 
 ```
@@ -317,33 +317,33 @@ Configure a DNS server to resolve host and cluster names on the Docker network.
 
 1. Create a new VM called 'admin-training-image-step-2' from image 'admin-training-image-step-1'.
 
-Add the following startup script to run VNC and configure DNS using a GUI.
+Add startup script below to run VNC so you can configure DNS using a GUI.
 
-The script also passes the VMs internal IP to VNC so users can SSH to the base VM and start and stop node containers. Sometimes VMs report internal IPs in a different format, so a second script is provided. If the first one doesn't work, you'll find out in a later step and have to try again using the second script.
+The script also passes the internal VM IP to VNC so users can SSH to the base VM where they start and stop node containers. Sometimes VMs report IPs using different formats, so a second script is provided. If the first one doesn't work, you'll find out in a later step and have to try again using the second script.
 
 Here's the original script that usually works.
 
 ```bash
-docker run --name controller  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname controller.rlabs.org --ip 172.18.0.2 -p 80:6901  re-vnc
+docker run --name vanilla-vnc  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  vanilla-vnc
 ```
 
 Here's the second script (this one has a 2 'awk' filters).
 
 ```bash
-docker run --name controller -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -e VNC_PW=trainee! --net rlabs --hostname controller --ip 172.18.0.2  -p 80:6901  re-vnc
+docker run --name vanilla-vnc -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F : '{ print $2 }' | awk -F ' ' '{ print $1}'` -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2  -p 80:6901  vanilla-vnc
 ```
 
 Configure DNS.
 
-3. Get the VM public IP from GCP console.
+2. Get the VM public IP from GCP console.
 
-4. Point your laptop browser to the public IP on port 80.
+3. Point your laptop browser to the public IP on port 80.
 
-5. Sign in to VNC desktop with password 'trainee!'.
+4. Sign in to VNC desktop with password 'trainee!'.
 
-6. Open a terminal shell window.
+5. Open a terminal shell window.
 
-7. Make sure the internal IP is set correctly. If not, start another VM with the other 'awk' filter.
+6. Make sure the internal IP is set correctly. If not, start another VM with the other 'awk' filter.
 
 ```bash
 echo $INT_IP
@@ -351,7 +351,7 @@ echo $INT_IP
 
 ```
 
-8. See the list of alias commands users can run from VNC.
+7. See the list of alias commands users can run from VNC.
 
 ```bash
 alias
@@ -359,7 +359,7 @@ alias
 
 ``` 
 
-9. Run the following command to SSH to the base VM. From there, you can run the vanilla DNS server as a container and attach it to the Docker network.
+8. Run the following command to SSH to the base VM. From there, you can run the vanilla DNS server as a container and attach it to the Docker network.
 
 ```bash
 ssh_base-vm
@@ -367,7 +367,7 @@ ssh_base-vm
 
 ```
 
-10. View the list of Docker containers running on the VM and make sure VNC's the only one.
+9. View the list of Docker containers running on the VM and make sure VNC's the only one.
 
 ```bash
 docker ps
@@ -375,10 +375,10 @@ docker ps
 
 ```
 
-11. Run the following command to start a vanilla Bind server in a container and attach it to the private Docker network.
+10. Run the following command to start a vanilla Bind server in a container and attach it to the private Docker network.
 
 ```bash
-docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  sameersbn/bind
+docker run --name vanilla-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  sameersbn/bind
 
 
 ```
@@ -386,23 +386,23 @@ docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -
 Someday, you may be able to run this command to start CoreDNS using only two text files: Corefile and rlabs.db in /home/trainee/coredns/:
 
 ```bash
-docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -v /home/trainee/coredns/:/root/ --restart=always --net rlabs -hostname ns.rlabs.org --ip 172.18.0.20  coredns/coredns -conf /root/Corefile
+docker run --name vanilla-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -v /home/trainee/coredns/:/root/ --restart=always --net rlabs -hostname ns.rlabs.org --ip 172.18.0.20  coredns/coredns -conf /root/Corefile
 
 
 ```
 
-12. Open Chrome browser on the VNC desktop.
+11. Open Chrome browser on the VNC desktop.
 
-13. Point it to https://172.18.0.20:10000 (this is Bind's GUI called WebMin).
+12. Point it to https://172.18.0.20:10000 (this is Bind's GUI called WebMin).
 
-14. Sign in as 'root' with 'password'.
+13. Sign in as 'root' with 'password'.
 
-15. Configure the server using these steps:
+14. Configure the server using these steps:
 https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
 
-16. Return to the VNCs shell terminal.
+15. Return to the VNCs shell terminal.
 
-17. Enter the following commands to exit the base VM SSH session run and DNS Utils to test DNS setup.
+16. Enter the following commands to exit the base VM SSH session run and DNS Utils to test DNS setup.
 
 ```bash
 exit
@@ -410,7 +410,7 @@ exit
 
 ```
 
-18. Run 'nslookup' to make sure hostnames resolve as follows:
+17. Run 'nslookup' to make sure hostnames resolve as follows:
 
 ```bash
 nslookup n1.rlabs.org
@@ -422,27 +422,27 @@ nslookup s1.rlabs.org
 n1 = 172.18.0.21
 s1 = 172.18.0.31
 
-19. If not, run the following commands to destroy the Bind DNS container and try again until it works.
+18. If not, run the following commands to destroy the Bind DNS container and try again until it works.
 
 NOTE: Skip these commands if DNS is working.
 
 ```bash
 exit
 ssh_base-vm
-docker stop dns
-docker rm dns
+docker stop vanilla-dns
+docker rm vanilla-dns
 
 
 ```
 
 Now you're ready to commit DNS changes to a Docker image in GCR.
 
-20. SSH to the VM from GCP console so you're using your GCP account to do this.
+19. SSH to the VM from GCP console so you're using your GCP account to do this.
 
-21. Commit DNS changes to a local Docker image first and tag it for upload to GCR.
+20. Commit DNS changes to a local Docker image first and tag it for upload to GCR.
 
 ```bash
-sudo docker commit dns admin-training-dns
+sudo docker commit vanilla-dns admin-training-dns
 sudo docker tag admin-training-dns gcr.io/redislabs-university/admin-training-dns
 
 
@@ -452,7 +452,7 @@ The next step requires Docker to authenticate to GCR with 'write' access to the 
 
 To get access, follow instructions here to apply a service account JSON key to Docker.
 
-22. Then run:
+21. Then run:
 
 ```bash
 sudo docker push gcr.io/redislabs-university/admin-training-dns 
@@ -462,26 +462,26 @@ sudo docker push gcr.io/redislabs-university/admin-training-dns
 
 Replace the DNS container and local images with the GCR image and test it.
 
-23. Remove the DNS container and local images.
+22. Remove the DNS container and local images.
 
 ```bash
-sudo docker stop dns
-sudo docker rm dns
+sudo docker stop vanilla-dns
+sudo docker rm vanilla-dns
 sudo docker rmi sameersbn/bind
 sudo docker rmi admin-training-dns
 
 
 ```
 
-24. Run the DNS server from the GCR image.
+23. Run the DNS server from the GCR image.
 
 ```bash
-docker run --name dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
+docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
 
 
 ```
 
-25. Test DNS still works.
+24. Test DNS still works.
 
 You have the following:
 - A Docker network
@@ -490,9 +490,9 @@ You have the following:
 
 Save your work.
 
-26. Create a snapshot of the VM called 'admin-training-image-step-2'.
+25. Create a snapshot of the VM called 'admin-training-image-step-2'.
 
-27. Create an image from the snapshot called 'admin-training-image-step-2'.
+26. Create an image from the snapshot called 'admin-training-image-step-2'.
 
 
 # Admin Training VM Setup - Step 3
@@ -502,13 +502,33 @@ You have the following:
 - A vanilla VNC Docker image
 - A configured DNS container and GCR image.
 
-Configure VNC to provide a layout with: background, 2 workspaces, Chrome browser with tabs and bookmarks to node UI/Redis Insight/DNS UI, and tabbed terminal shells to all nodes.
+Configure VNC to provide a consistent layout for users.
 
-1. Start a new VM from the 'rat-dns-done' image and re-enter the startup script from before to run the VNC container.
+It includes:
+- A background
+- 2 workspaces
+- Chrome launcher with tabs and bookmarks to all node UIs, Redis Insight, and the DNS UI
+- Terminal shell launchers with tabs opened and SSHed to all nodes.
 
-40. Get your new VM's public IP and sign in to the VNC console on port 80 from a laptop browser.
+1. Create a new VM called 'admin-training-image-step-3' from image 'admin-training-image-step-2'.
 
-41. Open a terminal shell and run the following to make sure you got your new VMs internal IP.
+Add the startup script to run VNC again.
+
+```bash
+docker run --name vanilla-vnc  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  vanilla-vnc
+```
+
+Configure DNS.
+
+2. Get the VM public IP from GCP console.
+
+3. Point your laptop browser to the public IP on port 80.
+
+4. Sign in to VNC desktop with password 'trainee!'.
+
+5. Open a terminal shell window.
+
+6. Make sure the internal IP is set correctly. If not, start another VM with the other 'awk' filter.
 
 ```bash
 echo $INT_IP
@@ -516,7 +536,7 @@ echo $INT_IP
 
 ```
 
-42. Run the following to make sure your DNS resolves hostnames.
+7. Run the following to make sure your DNS resolves hostnames.
 
 ```bash
 run_dnsutils
