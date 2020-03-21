@@ -154,8 +154,8 @@ alias ssh_base-vm="ssh trainee@\$INT_IP"
 
 alias run_dnsutils="ssh -t trainee@\$INT_IP ./scripts/run_dnsutils.sh "
 
-alias start_redis='ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash'
-alias stop_redis='ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)'
+alias start_redis="ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash"
+alias stop_redis="ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)"
 
 alias start_north_nodes="ssh -t trainee@\$INT_IP ./scripts/start_north_nodes.sh "
 alias start_south_nodes="ssh -t trainee@\$INT_IP ./scripts/start_south_nodes.sh "
