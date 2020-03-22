@@ -394,7 +394,8 @@ docker run --name vanilla-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resol
 
 13. Sign in as 'root' with 'password'.
 
-14. Configure the server using these steps:
+14. Configure the server using these steps.
+
 https://drive.google.com/open?id=1QBFCyuU9uUikC5jEy1QwiEe4ln2S7MzekM0qke1Y9Jg 
 
 15. Return to the VNCs shell terminal.
@@ -680,6 +681,8 @@ https://172.18.0.20:10000
 22. Save the 8 tabs as bookmarks and save the pages to open on startup to the current pages and then fix the setting to always open like that.
 
 23. Follow steps here to set up the VNC desktop with a Redis background image, 2 workspaces, and launchers for opening Chrome and shell terminals in specific locations and opening tabs to node command line shells.
+
+https://docs.google.com/document/d/1X8K2jZTwBLr_jG9a01-u_dxRrTwb2URNCy0zXoQZUG4/edit#heading=h.ihyyp7do45r3
 
 24. Stop the nodes before saving your work.
 
