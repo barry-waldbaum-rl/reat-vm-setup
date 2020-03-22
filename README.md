@@ -395,7 +395,7 @@ docker run --name vanilla-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resol
 13. Sign in as 'root' with 'password'.
 
 14. Configure the server using these steps:
-https://docs.google.com/document/d/1pDRZ8rHaR05UF4bU5SvwVkbM6FFj58apNsfxByibwoA/edit#heading=h.2gwmy0vc9jkp
+https://drive.google.com/open?id=1QBFCyuU9uUikC5jEy1QwiEe4ln2S7MzekM0qke1Y9Jg 
 
 15. Return to the VNCs shell terminal.
 
