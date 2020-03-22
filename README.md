@@ -299,9 +299,9 @@ You have the following:
 
 Save your work.
 
-13. Create a snapshot from the VM called 'admin-training-image-step-1'.
+13. Create a snapshot from the VM called 'admin-training-step-1'.
 
-14. Create an image from the snapshot called 'admin-training-image-step-1'.
+14. Create an image from the snapshot called 'admin-training-step-1'.
 
 
 # Admin Training VM Setup - Step 2
@@ -312,7 +312,7 @@ You have the following:
 
 Configure a DNS server to resolve host and cluster names on the Docker network.
 
-1. Create a new VM called 'admin-training-step-2' from image 'admin-training-image-step-1'.
+1. Create a new VM called 'admin-training-step-2' from image 'admin-training-step-1'.
 
 Add startup script below to run VNC so you can configure DNS using a GUI.
 
@@ -520,9 +520,9 @@ You have the following:
 
 Save your work.
 
-30. Create a snapshot of the VM called 'admin-training-image-step-2'.
+30. Create a snapshot of the VM called 'admin-training-step-2'.
 
-31. Create an image from the snapshot called 'admin-training-image-step-2'.
+31. Create an image from the snapshot called 'admin-training-step-2'.
 
 
 # Admin Training VM Setup - Step 3
@@ -540,7 +540,7 @@ It includes:
 - Chrome launcher with tabs and bookmarks to all node UIs, Redis Insight, and the DNS UI
 - Terminal shell launchers with tabs opened and SSHed to all nodes.
 
-1. Create a new VM called 'admin-training-image-step-3' from image 'admin-training-image-step-2'.
+1. Create a new VM called 'admin-training-step-3' from image 'admin-training-step-2'.
 
 Add the startup script to run VNC again.
 
@@ -698,9 +698,9 @@ stop_s3
 
 Save your work.
 
-24. Create a snapshot from the VM called 'admin-training-image-step-3'.
+24. Create a snapshot from the VM called 'admin-training-step-3'.
 
-25. Create an image from the snapshot called 'admin-training-image-step-3'.
+25. Create an image from the snapshot called 'admin-training-step-3'.
 
 You're ready to create user instances.
 
