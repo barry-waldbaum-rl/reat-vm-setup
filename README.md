@@ -416,8 +416,10 @@ nslookup s1.rlabs.org
 
 ```
 
+```bash
 n1 = 172.18.0.21
 s1 = 172.18.0.31
+```
 
 18. If not, run the following commands to destroy the Bind DNS container and try again until it works.
 
@@ -434,9 +436,11 @@ docker rm vanilla-dns
 
 Now you're ready to commit DNS changes to a Docker image in GCR.
 
-19. SSH to the VM from GCP console so you're using your GCP account to do this.
+19. Create a service account key with write permissions to the gcr.io/redislabs-university repository in GCR.
 
-20. Commit DNS changes to a local Docker image first and tag it for upload to GCR.
+20. SSH to the VM from GCP console so you're using your GCP account to perform the next steps.
+
+21. Commit changes to the vanilla DNS container to a local Docker image first and tag it for upload to GCR.
 
 ```bash
 sudo docker commit vanilla-dns admin-training-dns
@@ -445,11 +449,40 @@ sudo docker tag admin-training-dns gcr.io/redislabs-university/admin-training-dn
 
 ```
 
-The next step requires Docker to authenticate to GCR with 'write' access to the 'redislabs-university' repo. 
+The subsequent 'docker push' command requires Docker to first authenticate to GCR with 'write' access to the 'redislabs-university' repo. We'll use GCS to transfer the key file to the VM.
 
-To get access, follow instructions here to apply a service account JSON key to Docker.
+22. From you local laptop, upload the key file to the 'admin-training-bucket' in GCS with no extra characters.
 
-21. Then run:
+```bash
+gsutil cp . gs://admin-training-bucket/ru-gcr-write-key.json
+
+
+```
+
+23. Download the key from GCS to the base VM with the following commands.
+
+```bash
+$ cd /tmp
+gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json .
+
+
+```
+
+24. Authenticate Docker to GCR with the service account key.
+
+```bash
+$ cat /tmp/gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
+
+
+```
+
+25. Make sure you get the following.
+
+```bash
+Login Succeeded
+```
+
+26. Push the configured Bind DNS server image to GCR.
 
 ```bash
 sudo docker push gcr.io/redislabs-university/admin-training-dns 
@@ -457,9 +490,9 @@ sudo docker push gcr.io/redislabs-university/admin-training-dns
 
 ```
 
-Replace the DNS container and local images with the GCR image and test it.
+Replace the running DNS container and local Docker images with the GCR image and test it. The final VM image you create will download and run the configured DNS server from its GCR image.
 
-22. Remove the DNS container and local images.
+27. Remove the DNS container and local images.
 
 ```bash
 sudo docker stop vanilla-dns
@@ -470,7 +503,7 @@ sudo docker rmi admin-training-dns
 
 ```
 
-23. Run the DNS server from the GCR image.
+28. Run the DNS server from the GCR image.
 
 ```bash
 docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
@@ -478,7 +511,7 @@ docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/etc/re
 
 ```
 
-24. Test DNS still works.
+29. Test DNS still works.
 
 You have the following:
 - A Docker network
@@ -487,9 +520,9 @@ You have the following:
 
 Save your work.
 
-25. Create a snapshot of the VM called 'admin-training-image-step-2'.
+30. Create a snapshot of the VM called 'admin-training-image-step-2'.
 
-26. Create an image from the snapshot called 'admin-training-image-step-2'.
+31. Create an image from the snapshot called 'admin-training-image-step-2'.
 
 
 # Admin Training VM Setup - Step 3
