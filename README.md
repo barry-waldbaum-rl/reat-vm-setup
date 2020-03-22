@@ -532,13 +532,11 @@ You have the following:
 - A vanilla VNC Docker image
 - A configured DNS container and GCR image.
 
-Configure VNC to provide a consistent layout for users.
-
-It includes:
-- A background
-- 2 workspaces
-- Chrome launcher with tabs and bookmarks to all node UIs, Redis Insight, and the DNS UI
-- Terminal shell launchers with tabs opened and SSHed to all nodes.
+Now you'll configure the vanilla VNC container to provide a consistent layout for users that includes:
+- A background image and 2 workspaces
+- A Chrome launcher with tabs and bookmarks to all node admin consoles, Redis Insight, and the DNS UI
+- 2 terminal launchers to the VNC terminal and base VM
+- 2 terminal launchers with 3 tabs each, opened and SSHed to 'north' and 'south' Redis Enterprise nodes.
 
 1. Create a new VM called 'admin-training-step-3' from image 'admin-training-step-2'.
 
@@ -652,7 +650,7 @@ redis-cli -p 12000 -h north.rlabs.org
 
 16. Set a key in the database
 
-Test DNS lookup and database connection from Redis Insight.
+Test the database connection from Redis Insight.
 
 17. Open another tab in Chrome and point it the Redis Insight at:
 
