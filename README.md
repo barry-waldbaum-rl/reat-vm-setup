@@ -150,13 +150,15 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
+alias base-vm="ssh trainee@\$INT_IP"
+
 alias create_north_cluster="ssh -t trainee@\$INT_IP ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@\$INT_IP ./scripts/create_south_cluster.sh "
 
 alias dnsutils="ssh -t trainee@\$INT_IP ./scripts/run_dnsutils.sh "
 
-alias redis_start="ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash"
-alias redis_stop="ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)"
+alias start_redis="ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash"
+alias stop_redis="ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)"
 
 alias start_north_nodes="ssh -t trainee@\$INT_IP ./scripts/start_north_nodes.sh "
 alias start_south_nodes="ssh -t trainee@\$INT_IP ./scripts/start_south_nodes.sh "
@@ -176,7 +178,6 @@ alias stop_s2="ssh -t trainee@\$INT_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$INT_IP docker stop s3 "
 
 #no longer needed
-#alias ssh_base-vm="ssh trainee@\$INT_IP"
 #alias ssh_n1="ssh -t trainee@\$INT_IP docker exec -it n1 bash "
 
 EOF
