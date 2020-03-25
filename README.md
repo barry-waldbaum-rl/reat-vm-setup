@@ -769,11 +769,14 @@ sudo docker rmi admin-training-vnc
 
 33. Run the VNC server from the GCR image.
 
+IMPORTANT NOTE: You only have to run this command with 'sudo' this one time because this user needs sudo permissions. You could also have run these above Docker commands without 'sudo' if you switch user to 'trainee' after SSH from GCP console.
+
 ```bash
-docker run --name configured-vnc  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
+sudo docker run --name configured-vnc  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
 
 
 ```
+
 
 34. Test VNC still works.
 - Open Chrome and node terminals in the 3 workspaces
