@@ -1,20 +1,26 @@
 # Admin Training VM Setup - Step 1
 
-Setup a base VM with the following:
-- A VNC desktop
-- A private Docker network.
+Setup a base VM with:
+- VNC desktop
+- Docker network
+- DNS server
+- 6 Redis Labs nodes
+- Redis Insight
+- and DNS Utils.
 
-Then setup the following containers on the Docker network:
-- A DNS server
-- 6 Redis Enterprise nodes
-- DNS Utils
-- Redis Insight.
+Here's a description of what you get.
+https://drive.google.com/open?id=17tM53iHHTu-DQNPD48dYQEAias0qmqz30hpP2embUV4
 
-Save your work along the way in VM and Docker images for easy retrieval and reconfig.
+A gcloud command will be provided so employees can spin up their own VM rather than set them up from scratch.
 
-Provide a Python script to trainers and Redis Labs employees so they can snip up multiple VMs.
+VM setup is broken up into 3 stages below:
+1. Start Docker network and a vanilla VNC desktop
+2. Setup and save a DNS server
+3. Setup and save the VNC desktop.
 
-Each user gets a VM with the ability to run 6 Redis Enterprise nodes in 2 clusters on a private network. Nodes look like they run on VMs, but they really run in containers.
+During setup, you'll save your work along the way (VM and Docker images) so you can skips steps later.
+
+Nodes look like they run on VMs, but they really run in containers.
 
 A user accesses a VM with a VNC desktop running in a browser on port 80. All users need is the VM public IP and VNC password.
 
