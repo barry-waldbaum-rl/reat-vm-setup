@@ -456,7 +456,7 @@ gsutil cp . gs://admin-training-bucket/ru-gcr-write-key.json
 23. Download the key from GCS to the base VM with the following commands.
 
 ```bash
-$ cd /tmp
+cd /tmp
 gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json .
 
 
@@ -465,7 +465,7 @@ gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json .
 24. Authenticate Docker to GCR with the service account key.
 
 ```bash
-$ cat /tmp/gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
+cat /tmp/gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
 
 
 ```
@@ -690,13 +690,138 @@ stop_s3
 
 ```
 
+Replace the running VNC container and local Docker images with the GCR image and test it. The final VM image you create will download and run the configured VNC server from its GCR image at run time.
+
+25. SSH to the VM from GCP console as your Redis Labs employee GCP account. You will:
+- Remove the Redis Labs node containers 
+- Commit and push a new Docker image of the VNC container to GCR
+- Stop and remove the running VNC container and image
+- Run a new VNC container (configured-vnc) from the GCR image and test it
+- Stop and remove the new VNC container and image from the VM (no VNC running)
+- Take a snapshot and image of the VM.
+
+26. Remove Redis Labs node containers. If the containers are saved in the VM image, they will auto-start and auto-configure into clusters. You want students to start them so they build clusters from scratch.  Leave the local Docker image to save load time in class.
+
+```bash
+sudo docker rm n1
+sudo docker rm n2
+sudo docker rm n3
+sudo docker rm s1
+sudo docker rm s2
+sudo docker rm s3
+
+
+```
+
+27. Commit changes to the vanilla VNC container (vnc) to a local Docker image first and tag it for upload to GCR.
+
+```bash
+sudo docker commit vnc admin-training-vnc
+sudo docker tag admin-training-vnc gcr.io/redislabs-university/admin-training-vnc
+
+
+```
+
+
+28. Download the key from GCS to the base VM with the following commands.
+
+```bash
+cd /tmp
+gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json .
+
+
+```
+
+29. Authenticate Docker to GCR with the service account key.
+
+```bash
+cat /tmp/gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
+
+
+```
+
+30. Make sure you get the following.
+
+```bash
+Login Succeeded
+```
+
+31. Push the configured VNC server image to GCR.
+
+```bash
+sudo docker push gcr.io/redislabs-university/admin-training-vnc
+
+
+```
+
+Replace the running VNC container and local Docker image with the GCR image and test it.
+
+32. Remove the VNC container and local images.
+
+```bash
+sudo docker stop vnc
+sudo docker rm vnc
+sudo docker rmi vanilla-vnc
+sudo docker rmi admin-training-vnc
+
+
+```
+
+33. Run the VNC server from the GCR image.
+
+```bash
+docker run --name configured-vnc  -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
+
+
+```
+
+34. Test VNC still works.
+- Open Chrome and node terminals in the 3 workspaces
+- Run node containers and create clsuters
+- Create a database and test DNS from node terminals and Redis Insight.
+
+You have the following:
+- A Docker network
+- A configured VNC container and GCR image
+- A configured DNS container and GCR image.
+
+35. Stop and remove node containers one more time from your GCP SSH terminal. Otherwise, they will auto-start and auto-create clusters when users start the VM.
+
+```bash
+sudo docker stop n1
+sudo docker stop n2
+sudo docker stop n3
+sudo docker stop s1
+sudo docker stop s2
+sudo docker stop s3
+
+sudo docker rm n1
+sudo docker rm n2
+sudo docker rm n3
+sudo docker rm s1
+sudo docker rm s2
+sudo docker rm s3
+
+
+```
+
+36. Stop the VNC container and remove the local image one more time. The image will load and the container will run when users or instructors create VM instances.
+
+```bash
+sudo docker stop configured-vnc
+sudo docker rm configured-vnc
+sudo docker rmi gcr.io/redislabs-university/admin-training-vnc
+
+
+```
+
 Save your work.
 
-25. Possibly commit the configured VNC Docker container to a local image and upload it to GCR. When you start user VM instances, you'll use that GCR image rather than the vanilla VNC iamge. 
+30. Create a snapshot of the VM called 'admin-training-step-3'.
 
-24. Create a snapshot from the VM called 'admin-training-step-3'.
+31. Create an image from the snapshot called 'admin-training-step-3'.
 
-25. Create an image from the snapshot called 'admin-training-step-3'.
+The final VM image you create will download and run the configured VNC server from its GCR image with the start-up script (see below).
 
 You're ready to create user instances.
 
@@ -708,7 +833,7 @@ You have the following:
 When creating user instances remember to include the startup script which runs the VNC container and name your instances 'base-vm-01', 'base-vm-02', and so on.
 
 ```bash
-docker run --name vnc -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
+docker run --name configured-vnc -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
 ```
 
 
