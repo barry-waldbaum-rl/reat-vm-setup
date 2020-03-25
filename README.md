@@ -817,9 +817,9 @@ sudo docker rmi gcr.io/redislabs-university/admin-training-vnc
 
 Save your work.
 
-30. Create a snapshot of the VM called 'admin-training-step-3'.
+37. Create a snapshot of the VM called 'admin-training-step-3'.
 
-31. Create an image from the snapshot called 'admin-training-step-3'.
+38. Create an image from the snapshot called 'admin-training-step-3'.
 
 The final VM image you create will download and run the configured VNC server from its GCR image with the start-up script (see below).
 
@@ -830,7 +830,7 @@ You have the following:
 - A configured VNC Docker container
 - A configured DNS container and GCR image.
 
-When creating user instances remember to include the startup script which runs the VNC container and name your instances 'base-vm-01', 'base-vm-02', and so on.
+39. When creating user instances remember to include the startup script which runs the VNC container and name your instances 'base-vm-01', 'base-vm-02', and so on.
 
 ```bash
 docker run --name configured-vnc -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
