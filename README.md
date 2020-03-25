@@ -465,7 +465,7 @@ gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json .
 24. Authenticate Docker to GCR with the service account key.
 
 ```bash
-cat /tmp/gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
+cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
 
 
 ```
@@ -735,7 +735,7 @@ gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json .
 29. Authenticate Docker to GCR with the service account key.
 
 ```bash
-cat /tmp/gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
+cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
 
 
 ```
