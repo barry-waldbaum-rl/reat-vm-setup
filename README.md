@@ -722,7 +722,7 @@ sudo docker rm s3
 27. Commit changes to the vanilla VNC container (vnc) to a local Docker image first and tag it for upload to GCR.
 
 ```bash
-sudo docker commit vnc admin-training-vnc
+sudo docker commit vanilla-vnc admin-training-vnc
 sudo docker tag admin-training-vnc gcr.io/redislabs-university/admin-training-vnc
 
 
@@ -765,8 +765,8 @@ Replace the running VNC container and local Docker image with the GCR image and 
 32. Remove the VNC container and local images.
 
 ```bash
-sudo docker stop vnc
-sudo docker rm vnc
+sudo docker stop vanilla-vnc
+sudo docker rm vanilla-vnc
 sudo docker rmi vanilla-vnc
 sudo docker rmi admin-training-vnc
 
@@ -794,27 +794,8 @@ You have the following:
 - A configured VNC container and GCR image
 - A configured DNS container and GCR image.
 
-35. Stop and remove node containers one more time from your GCP SSH terminal. Otherwise, they will auto-start and auto-create clusters when users start the VM.
 
-```bash
-sudo docker stop n1
-sudo docker stop n2
-sudo docker stop n3
-sudo docker stop s1
-sudo docker stop s2
-sudo docker stop s3
-
-sudo docker rm n1
-sudo docker rm n2
-sudo docker rm n3
-sudo docker rm s1
-sudo docker rm s2
-sudo docker rm s3
-
-
-```
-
-36. Stop the VNC container and remove the local image one more time. The image will load and the container will run when users or instructors create VM instances.
+35. Stop the VNC container and remove the local image one more time. The image will load and the container will run when users or instructors create VM instances.
 
 ```bash
 sudo docker stop configured-vnc
