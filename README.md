@@ -184,6 +184,10 @@ alias stop_s2="ssh -t trainee@\$INT_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$INT_IP docker stop s3 "
 EOF
 
+cat << EOF > vnc_docker/chromium-browser.init
+CHROMIUM_FLAGS='--no-sandbox --disable-gpu --user-data-dir --window-size=1150,900 --window-position=130,0 --window-workspace=0 -test-type'
+EOF
+
 mkdir scripts
 
 cat << EOF > scripts/run_north_nodes.sh
@@ -274,13 +278,15 @@ FROM consol/ubuntu-xfce-vnc
 # Switch to root user to install additional software
 USER 0
 
-## Install SSH, DNS Utils, and the VNC user's bashrc
+## Install SSH, DNS Utils, and the VNC user's bashrc and chromium-browser.init
 RUN apt update; apt install -y ssh dnsutils;
 RUN mkdir /headless/.ssh
 COPY ./ssh /headless/.ssh
 RUN chown -R 1000 /headless/.ssh/
 COPY bashrc /headless/.bashrc
 RUN chown -R 1000 /headless/.bashrc
+COPY chromium-browser.init /headless/.chromium-browser.init
+RUN chown -R 1000 /headless/.chromium-browser.init
 
 ## switch back to default user
 USER 1000
