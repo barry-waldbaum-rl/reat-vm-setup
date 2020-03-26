@@ -49,12 +49,12 @@ Subnet IP Address Range | 172.18.0.0/16
   
 Requirement  | Specification  
 ------------ | -------------
-Name | admin-training-image-step-1
+Name | admin-training-phase-1
 CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
 Disk | 30 GB
-Networking | reat-vpc
+Networking | admin-training-vpc
   
 4. SSH to the base VM from GCP console to finish setup.
 
@@ -304,9 +304,9 @@ You have the following:
 
 Save your work.
 
-13. Create a snapshot from the VM called 'admin-training-step-1'.
+13. Create a snapshot from the VM called 'admin-training-phase-1'.
 
-14. Create an image from the snapshot called 'admin-training-step-1'.
+14. Create an image from the snapshot called 'admin-training-phase-1'.
 
 
 # Admin Training VM Setup - Step 2
@@ -317,7 +317,7 @@ You have the following:
 
 Configure a DNS server to resolve host and cluster names on the Docker network.
 
-1. Create a new VM called 'admin-training-step-2' from image 'admin-training-step-1'.
+1. Create a new VM called 'admin-training-phase-2' from image 'admin-training-phase-1'.
 
 Add startup script below to run VNC so you can configure DNS using a GUI.
 
@@ -526,9 +526,9 @@ You have the following:
 
 Save your work.
 
-30. Create a snapshot of the VM called 'admin-training-step-2'.
+30. Create a snapshot of the VM called 'admin-training-phase-2'.
 
-31. Create an image from the snapshot called 'admin-training-step-2'.
+31. Create an image from the snapshot called 'admin-training-phase-2'.
 
 
 # Admin Training VM Setup - Step 3
@@ -544,7 +544,7 @@ Now you'll configure the vanilla VNC container to provide a consistent layout fo
 - 2 terminal launchers to the VNC terminal and base VM
 - 2 terminal launchers with 3 tabs each, opened and SSHed to 'north' and 'south' Redis Enterprise nodes.
 
-1. Create a new VM called 'admin-training-step-3' from image 'admin-training-step-2'.
+1. Create a new VM called 'admin-training-phase-3' from image 'admin-training-phase-2'.
 
 Add the startup script to run VNC again.
 
@@ -814,9 +814,9 @@ sudo docker rmi gcr.io/redislabs-university/admin-training-vnc
 
 Save your work.
 
-37. Create a snapshot of the VM called 'admin-training-step-3'.
+37. Create a snapshot of the VM called 'admin-training-phase-3'.
 
-38. Create an image from the snapshot called 'admin-training-step-3'.
+38. Create an image from the snapshot called 'admin-training-phase-3'.
 
 The final VM image you create will download and run the configured VNC server from its GCR image with the start-up script (see below).
 
