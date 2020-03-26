@@ -768,6 +768,7 @@ Replace the running VNC container and local Docker image with the GCR image and 
 sudo docker stop vanilla-vnc
 sudo docker rm vanilla-vnc
 sudo docker rmi vanilla-vnc
+sudo docker rmi consol/ubuntu-xfce-vn
 sudo docker rmi admin-training-vnc
 
 
