@@ -285,8 +285,6 @@ COPY ./ssh /headless/.ssh
 RUN chown -R 1000 /headless/.ssh/
 COPY bashrc /headless/.bashrc
 RUN chown -R 1000 /headless/.bashrc
-COPY chromium-browser.init /headless/.chromium-browser.init
-RUN chown -R 1000 /headless/.chromium-browser.init
 
 ## switch back to default user
 USER 1000
