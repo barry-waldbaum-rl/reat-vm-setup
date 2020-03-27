@@ -717,7 +717,17 @@ Replace the running VNC container and local Docker images with the GCR image and
 - Stop and remove the new VNC container and image from the VM (no VNC running)
 - Take a snapshot and image of the VM.
 
-26. Remove Redis Labs node containers. If the containers are saved in the VM image, they will auto-start and auto-configure into clusters. You want students to start them so they build clusters from scratch.  Leave the local Docker image to save load time in class.
+26. You have two choices so nodes do not auto-start and auto-reconfigure into clusters upon VM startup (you want students to configure the cluster by hand):
+- Remove node containers
+- Restart the nodes.
+
+```bash
+start_north_nodes
+
+
+```
+
+OR
 
 ```bash
 sudo docker rm n1
@@ -779,7 +789,7 @@ Replace the running VNC container and local Docker image with the GCR image and 
 sudo docker stop vanilla-vnc
 sudo docker rm vanilla-vnc
 sudo docker rmi vanilla-vnc
-sudo docker rmi consol/ubuntu-xfce-vn
+sudo docker rmi consol/ubuntu-xfce-vnc
 sudo docker rmi admin-training-vnc
 
 
