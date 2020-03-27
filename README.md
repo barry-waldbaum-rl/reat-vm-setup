@@ -847,3 +847,5 @@ You have the following:
 ```bash
 docker run --name configured-vnc -d -e INT_IP=`/sbin/ifconfig | grep -A 1 ens4 | grep inet | awk -F ' ' '{ print $2 }'`  -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
 ```
+
+NOTE: Student instances may have the nodes started (but not clustered) or they may not be running yet. The current way the image was saved (by removing the node containers) the nodes will not be running and need to be started before clustering.
