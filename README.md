@@ -513,6 +513,17 @@ docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/etc/re
 
 29. Test DNS still works.
 
+30. IMPORTANT: Stop and remove the VNC container.
+
+NOTE: If you skip this step, the container will still be present in the container list and you won't be able to start it from the startup script when you start the VM in the next phase.
+
+```bash
+sudo docker stop vanilla-vnc
+sudo docker rm vanilla-vnc
+
+
+```
+
 You have the following:
 - A Docker network
 - A vanilla VNC Docker image
@@ -520,9 +531,9 @@ You have the following:
 
 Save your work.
 
-30. Create a snapshot of the VM called 'admin-training-phase-2'.
+31. Create a snapshot of the VM called 'admin-training-phase-2'.
 
-31. Create an image from the snapshot called 'admin-training-phase-2'.
+32. Create an image from the snapshot called 'admin-training-phase-2'.
 
 
 # Admin Training VM Setup - Step 3
