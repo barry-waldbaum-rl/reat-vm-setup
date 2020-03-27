@@ -156,18 +156,18 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-alias run_dnsutils="ssh -t trainee@\$INT_IP ./scripts/run_dnsutils.sh "
+alias create_north_cluster="ssh -t trainee@\$INT_IP ./scripts/create_north_cluster.sh "
+alias create_south_cluster="ssh -t trainee@\$INT_IP ./scripts/create_south_cluster.sh "
 
-alias run_north_cluster="ssh -t trainee@\$INT_IP ./scripts/run_north_cluster.sh "
-alias run_north_nodes="ssh -t trainee@\$INT_IP ./scripts/run_north_nodes.sh "
+alias run_dnsutils="ssh -t trainee@\$INT_IP ./scripts/run_dnsutils.sh "
 
 alias run_redis_start="ssh -t trainee@\$INT_IP docker run -it --name redis -h redis -w / redis bash"
 alias run_redis_stop="ssh -t trainee@\$INT_IP docker container rm \$\(docker container ls -q -f '\''status=exited'\''\)"
 
-alias run_south_cluster="ssh -t trainee@\$INT_IP ./scripts/run_south_cluster.sh "
-alias run_south_nodes="ssh -t trainee@\$INT_IP ./scripts/run_south_nodes.sh "
-
 alias ssh_base-vm="ssh -t trainee@\$INT_IP"        # only used by admins when building VMs
+
+alias start_north_nodes="ssh -t trainee@\$INT_IP ./scripts/start_north_nodes.sh "
+alias start_south_nodes="ssh -t trainee@\$INT_IP ./scripts/start_south_nodes.sh "
 
 alias start_n1="ssh -t trainee@\$INT_IP docker start n1 "
 alias start_n2="ssh -t trainee@\$INT_IP docker start n2 "
@@ -184,13 +184,9 @@ alias stop_s2="ssh -t trainee@\$INT_IP docker stop s2 "
 alias stop_s3="ssh -t trainee@\$INT_IP docker stop s3 "
 EOF
 
-cat << EOF > vnc_docker/chromium-browser.init
-CHROMIUM_FLAGS='--no-sandbox --disable-gpu --user-data-dir --window-size=1150,900 --window-position=130,0 --window-workspace=0 -test-type'
-EOF
-
 mkdir scripts
 
-cat << EOF > scripts/run_north_nodes.sh
+cat << EOF > scripts/start_north_nodes.sh
 docker kill n1; docker rm n1;
 docker kill n2; docker rm n2;
 docker kill n3; docker rm n3;
@@ -203,7 +199,7 @@ docker exec --user root n3 bash -c "iptables -t nat -I PREROUTING -p udp --dport
 sleep 60
 EOF
 
-cat << EOF > scripts/run_south_nodes.sh
+cat << EOF > scripts/start_south_nodes.sh
 docker kill s1; docker rm s1;
 docker kill s2; docker rm s2;
 docker kill s3; docker rm s3;
@@ -216,7 +212,7 @@ docker exec --user root s3 bash -c "iptables -t nat -I PREROUTING -p udp --dport
 sleep 60
 EOF
 
-cat << EOF > scripts/run_north_cluster.sh
+cat << EOF > scripts/create_north_cluster.sh
 docker exec -it n1 bash -c "/opt/redislabs/bin/rladmin cluster create persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.21 \
         name north.rlabs.org username admin@rlabs.org password admin";
@@ -230,7 +226,7 @@ docker exec -it n3 bash -c "/opt/redislabs/bin/rladmin cluster join persistent_p
         username admin@rlabs.org password admin nodes 172.18.0.21";
 EOF
 
-cat << EOF > scripts/run_south_cluster.sh
+cat << EOF > scripts/create_south_cluster.sh
 docker exec -it s1 bash -c "/opt/redislabs/bin/rladmin cluster create persistent_path \
         /var/opt/redislabs/persist ephemeral_path /var/opt/redislabs/tmp addr 172.18.0.31 \
         name south.rlabs.org username admin@rlabs.org password admin";
@@ -248,10 +244,10 @@ docker run --name dnsutils -it -v /home/trainee/resolve/resolv.conf:/etc/resolv.
 EOF
 
 # make the scripts executable
-chmod 755 scripts/run_north_nodes.sh
-chmod 755 scripts/run_south_nodes.sh
-chmod 755 scripts/run_north_cluster.sh
-chmod 755 scripts/run_south_cluster.sh
+chmod 755 scripts/start_north_nodes.sh
+chmod 755 scripts/start_south_nodes.sh
+chmod 755 scripts/create_north_cluster.sh
+chmod 755 scripts/create_south_cluster.sh
 chmod 755 scripts/run_dnsutils.sh
 
 
