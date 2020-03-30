@@ -424,6 +424,11 @@ Save your work.
 
 
 
+
+
+
+
+
 # Stage 2
 
 You have the following:
@@ -438,6 +443,11 @@ Now you'll configure the VNC container with:
 - 2 terminal launchers to VNC and the base VM.
 
 1. Create a new VM called 'admin-training-phase-2' from image 'admin-training-phase-1'.
+
+NOTE: May need to run with startup script:
+```bash
+ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
+```
 
 Configure VNC.
 
