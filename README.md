@@ -17,11 +17,11 @@ Users access their VM by VNC on port 80.  All they need is the VM public IP and 
 Here's what you get.
 https://drive.google.com/open?id=17tM53iHHTu-DQNPD48dYQEAias0qmqz30hpP2embUV4
 
-Setup is in 2 phases:
+Setup is in 2 stages:
 1. Start Docker/VNC and configure DNS
 2. Configure VNC.
 
-# VM Setup - Phase 1
+# Stage 1
 
 1. Create a VPC in GCP with subnet 172.18.0.0/16 in the region where you want to run VMs.
 
@@ -422,7 +422,10 @@ Save your work.
 32. Create an image from the snapshot called 'admin-training-phase-1'.
 
 
-# VM Setup - Phase 2
+
+
+
+# Stage 2
 
 You have the following:
 - A Docker network
