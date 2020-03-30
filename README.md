@@ -346,21 +346,11 @@ s1 = 172.18.0.31
 - SSH to the base VM
 - Stop and remove DNS container and try again.
 
-Commit DNS changes to a Docker image in GCR for backup. 'docker push' requires 'write' access to the 'redislabs-university' repo.
+Backup DNS changes to a Docker image in GCR. This requires 'write' access to the 'redislabs-university' repo. A service account key was created in GCP for Docker and stored in gs://admin-training-bucket/ru-gcr-write-key.json.
 
-25. Create a service account key in GCP with write permissions to the gcr.io/redislabs-university repo.
+25. From GCP console, SSH to the VM so you're using your Redis Labs GCP account to perform the next steps.
 
-26. Upload the key file to GCS bucket 'admin-training-bucket' so you can tranfer it to the VM.
-
-```bash
-gsutil cp . gs://admin-training-bucket/ru-gcr-write-key.json
-
-
-```
-
-27. From GCP console, SSH to the VM so you're using your Redis Labs GCP account to perform the next steps.
-
-28. Download the key from GCS to the VM and authenticate Docker to GCR.
+26. Download the key from GCS to the VM and authenticate Docker to GCR.
 
 ```bash
 gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json /tmp
@@ -377,7 +367,7 @@ Login Succeeded
 
 Run the following commands with 'sudo'.
 
-29. Commit changes to the DNS container in a local image, tag it for upload to GCR, and push the image.
+27. Commit changes to the DNS container in a local image, tag it for upload to GCR, and push the image.
 
 ```bash
 sudo docker commit vanilla-dns admin-training-dns
@@ -387,7 +377,7 @@ sudo docker push gcr.io/redislabs-university/admin-training-dns
 
 ```
 
-30. Replace the DNS container with the GCR image.
+28. Replace the DNS container with the GCR image.
 
 ```bash
 sudo docker stop vanilla-dns
@@ -400,7 +390,7 @@ sudo docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/e
 
 ```
 
-31. Return to the VNCs shell terminal and run the following to make sure DNS still works.
+29. Return to the VNCs shell terminal and run the following to make sure DNS still works.
 
 ```bash
 run_dnsutils
@@ -409,7 +399,7 @@ nslookup n1.rlabs.org
 
 ```
 
-32. SSH to the base VM and add Redis Insight as a container so students can view database contents in a GUI.
+30. SSH to the base VM and add Redis Insight as a container so students can view database contents in a GUI.
 
 ```bash
 exit
@@ -427,9 +417,9 @@ You have the following:
 
 Save your work.
 
-33. Create a snapshot of the VM called 'admin-training-phase-1'.
+31. Create a snapshot of the VM called 'admin-training-phase-1'.
 
-34. Create an image from the snapshot called 'admin-training-phase-1'.
+32. Create an image from the snapshot called 'admin-training-phase-1'.
 
 
 # VM Setup - Phase 2
