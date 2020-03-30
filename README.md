@@ -1,36 +1,25 @@
 # Admin Training VM Setup - Step 1
 
-Setup a base VM with:
-- VNC desktop
-- Docker network
-- DNS server
-- 6 Redis Labs nodes
-- Redis Insight
-- and DNS Utils.
+This documents provides steps to create a VM image from scratch.
 
-Here's a description of what you get.
+Instructors spin up VMs from the image.
+
+Each VM provides:
+- 6 RE nodes
+- A DNS server
+- A VNC desktop
+- Redis Insight.
+
+Nodes run in containers, but they look like they run on VMs.
+
+Users access their VM by VNC on port 80.  All they need is the VM public IP and VNC password.
+
+Here's what you get.
 https://drive.google.com/open?id=17tM53iHHTu-DQNPD48dYQEAias0qmqz30hpP2embUV4
 
-A gcloud command will be provided so employees can spin up their own VM rather than set them up from scratch.
-
-VM setup is broken up into 3 stages below:
-1. Start Docker network and a vanilla VNC desktop
-2. Setup and save a DNS server
-3. Setup and save the VNC desktop.
-
-During setup, you'll save your work along the way (VM and Docker images) so you can skips steps later.
-
-Nodes look like they run on VMs, but they really run in containers.
-
-A user accesses a VM with a VNC desktop running in a browser on port 80. All users need is the VM public IP and VNC password.
-
-From there, users can:
-- Configure and investigate DNS
-- Start and stop nodes
-- Join nodes in clusters
-- Add databases
-- Access databases from command line or Redis Insight
-- Investigate failover of nodes, databases, and cluster.
+Setup is in 2 phases:
+1. Start Docker/VNC and configure DNS
+2. Configure VNC.
 
 Set up:
 
