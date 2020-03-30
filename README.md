@@ -1,4 +1,4 @@
-# Admin Training VM Setup - Step 1
+# Admin Training VM Setup
 
 This documents provides steps to create a VM image from scratch.
 
@@ -21,7 +21,7 @@ Setup is in 2 phases:
 1. Start Docker/VNC and configure DNS
 2. Configure VNC.
 
-Set up:
+# VM Setup - Phase 1
 
 1. Create a VPC in GCP with subnet 172.18.0.0/16 in the region where you want to run VMs.
 
@@ -451,7 +451,7 @@ Save your work.
 36. Create an image from the snapshot called 'admin-training-phase-1'.
 
 
-# Admin Training VM Setup - Step 2
+# VM Setup - Phase 2
 
 You have the following:
 - A Docker network
