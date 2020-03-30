@@ -410,10 +410,9 @@ docker run --name insight -d -v redisinsight:/db -v /home/trainee/resolve/resolv
 ```
 
 You have the following:
-- A Docker network
 - A vanilla VNC container
-- A configured DNS server and GCR image
-- A Redis Insight container.
+- A configured DNS server
+- Redis Insight.
 
 Save your work.
 
@@ -428,15 +427,15 @@ Save your work.
 # Stage 2
 
 You have the following:
-- A Docker network
 - A vanilla VNC container
-- A configured DNS container and GCR image.
+- A configured DNS container
+- Redis Insight.
 
-Now you'll configure the vanilla VNC container to provide a consistent layout for users that includes:
+Now you'll configure the VNC container with:
 - A background image and 2 workspaces
-- A Chrome launcher with tabs and bookmarks to all node admin consoles, Redis Insight, and the DNS UI
-- 2 terminal launchers to the VNC terminal and base VM
-- 2 terminal launchers with 3 tabs each, opened and SSHed to 'north' and 'south' Redis Enterprise nodes.
+- A Chrome launcher
+- 2 terminal launchers to nodes
+- 2 terminal launchers to VNC and the base VM.
 
 1. Create a new VM called 'admin-training-phase-2' from image 'admin-training-phase-1'.
 
