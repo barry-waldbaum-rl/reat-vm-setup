@@ -77,12 +77,18 @@ trainee ALL=(ALL) NOPASSWD:ALL
 8. Install Docker.
 
 ```bash
-apt-get -y install \
+apt-get install \
     apt-transport-https \
     ca-certificates \
     curl \
     software-properties-common
+    
+    
+```
 
+Enter 'Y' to continue.
+
+```bash
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
 apt-key fingerprint 0EBFCD88
