@@ -136,7 +136,7 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-#ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
+ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
 
 alias create_north_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_south_cluster.sh "
