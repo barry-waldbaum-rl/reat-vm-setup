@@ -105,10 +105,6 @@ sudo su - trainee
 9. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
 
 ```bash
-#
-# reset
-# rm -rf .ssh vnc_docker
-#
 mkdir .ssh
 ssh-keygen -q -t rsa -N '' -f .ssh/id_rsa 2>/dev/null <<< y >/dev/null
 cp -r .ssh/id_rsa.pub .ssh/authorized_keys 
@@ -121,7 +117,7 @@ cp -r .ssh/ vnc_docker/ssh
 
 10. Create bashrc with aliases so users can:
 - Start, stop, and SSH to nodes as if they were on VMs
-- Run Redis in a separate container for lab 2
+- Run Redis OSS in a container for lab 2
 - Run DNS Utils.
 
 ```bash
