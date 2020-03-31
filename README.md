@@ -47,22 +47,14 @@ Networking | admin-training-vpc
   
 4. SSH to the base VM from GCP console to finish setup.
 
-5. Install 'vi', add user 'trainee', add the user to the 'docker' group, and give the student permissions to run Docker commands without entering 'sudo'.
+5. Install and set default editor to vim. Then add 'trainee' user to 'docker' group with permission to start and stop containers running Redis Labs software.
 
 ```bash 
-# install and set default editor to vim
-# then add 'trainee' user to 'docker' group so it can start and stop containers that run Redis software
 sudo su
 apt -y update
 apt -y install vim
-update-alternatives --config editor
+update-alternatives --config editor <<< 3
 
-
-```
-
-Enter '3' to set the editor type.
-
-```bash
 adduser --disabled-password --gecos "" trainee
 groupadd docker
 usermod -aG docker trainee
@@ -83,14 +75,8 @@ apt-get install \
     apt-transport-https \
     ca-certificates \
     curl \
-    software-properties-common 
+    software-properties-common <<< Y
 
-
-```
-
-and enter 'Y'.
-
-```bash
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
 apt-key fingerprint 0EBFCD88
