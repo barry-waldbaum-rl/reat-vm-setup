@@ -47,7 +47,7 @@ Networking | admin-training-vpc
   
 4. SSH to the base VM from GCP console to finish setup.
 
-5. Install and set default editor to vim. Then add 'trainee' user to 'docker' group with permission to start and stop containers running Redis Labs software.
+5. Install and set default editor to vim.
 
 ```bash 
 sudo su
@@ -55,6 +55,12 @@ apt -y update
 apt -y install vim
 update-alternatives --config editor <<< 3
 
+
+```
+
+6. Add 'trainee' user to 'docker' group with permission to start and stop containers.
+
+```bash
 adduser --disabled-password --gecos "" trainee
 groupadd docker
 usermod -aG docker trainee
@@ -62,20 +68,20 @@ usermod -aG docker trainee
 
 ```
 
-Add the following line to /etc/sudoers using "sudo visudo" so students can start and stop containers without entering 'sudo'.
+7. Add the following line to /etc/sudoers using "sudo visudo" so students can start and stop containers without entering 'sudo'.
 
 ```bash
 trainee ALL=(ALL) NOPASSWD:ALL
 ```
 
-6. Install Docker.
+8. Install Docker.
 
 ```bash
-apt-get install \
+apt-get -y install \
     apt-transport-https \
     ca-certificates \
     curl \
-    software-properties-common <<< Y
+    software-properties-common
 
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
@@ -92,7 +98,7 @@ apt-get -y install docker-ce
 
 ```
 
-7. Switch to 'trainee' user to create the Docker network, add user scripts, and build the VNC Docker image.
+9. Switch to 'trainee' user to create the Docker network, add user scripts, and build the VNC Docker image.
 
 ```bash
 sudo su - trainee
@@ -100,9 +106,9 @@ sudo su - trainee
 
 ```
 
-8. Edit trainee's .bashrc file and uncomment the line '#force_color_prompt'. This sets the prompt to 'green'. Shell prompt color for the VNC user is 'yellow'. Shell prompt color for 'root' users on Redis Enterprise nodes is 'white'. This way users can tell them apart.
+10. Uncomment the line '#force_color_prompt' in the user's .bashrc file. This sets the prompt color for the VM user to 'green' so you can tell it apart from the VNC user.
 
-9. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes as if they were on their own machines. 
+11. Generate keys so students can 'silently' SSH from VNC container to base VM and RL nodes. 
 
 ```bash
 mkdir .ssh
@@ -115,10 +121,7 @@ cp -r .ssh/ vnc_docker/ssh
 
 ```
 
-10. Create bashrc with aliases so users can:
-- Start, stop, and SSH to nodes as if they were on VMs
-- Run Redis OSS in a container for lab 2
-- Run DNS Utils.
+12. Create bashrc with aliases so users can start, stop, and SSH to nodes as if they were on VMs.
 
 ```bash
 cat << EOF > vnc_docker/bashrc
@@ -126,7 +129,7 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
+#ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
 
 alias create_north_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_south_cluster.sh "
@@ -225,7 +228,7 @@ chmod 755 scripts/run_dnsutils.sh
 
 ```
 
-11. Create the Docker network.
+13. Create the Docker network.
 
 ```bash
 mkdir resolve
@@ -236,7 +239,7 @@ docker network create --subnet=172.18.0.0/16 rlabs
 
 ```
 
-12. Build the VNC Docker image and run it as a container.
+14. Build the VNC Docker image.
 
 ```bash
 cat << EOF > vnc_docker/Dockerfile
@@ -261,6 +264,12 @@ EOF
 cd vnc_docker
 docker build -t vanilla-vnc .
 
+
+```
+
+15. Run it as a container.
+
+```bash
 docker run --name vanilla-vnc  -d -e VNC_PW=trainee! --restart=always --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  vanilla-vnc
 
 
@@ -268,15 +277,15 @@ docker run --name vanilla-vnc  -d -e VNC_PW=trainee! --restart=always --net rlab
 
 Now you have VNC desktop running and can configure BIND DNS with its GUI.
 
-13. Get the VM public IP from GCP console.
+16. Get the VM public IP from GCP console.
 
-14. Point your laptop browser to the public IP on port 80.
+17. Point your laptop browser to the public IP on port 80.
 
-15. Sign in to VNC desktop with password 'trainee!'.
+18. Sign in to VNC desktop with password 'trainee!'.
 
-16. Open a terminal shell window.
+19. Open a terminal shell window.
 
-17. Run the DNS server as a container.
+20. Run the DNS server as a container.
 
 ```bash
 ssh_base-vm
@@ -295,19 +304,19 @@ docker run --name vanilla-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resol
 
 Configure BIND DNS.
 
-18. Open Chrome browser on the VNC desktop.
+21. Open Chrome browser on the VNC desktop.
 
-19. Point it to https://172.18.0.20:10000 (this is Bind's GUI).
+22. Point it to https://172.18.0.20:10000 (this is Bind's GUI).
 
-20. Sign in as 'root' with 'password'.
+23. Sign in as 'root' with 'password'.
 
-21. Configure the server using these steps.
+24. Configure the server using these steps.
 
 https://drive.google.com/open?id=1QBFCyuU9uUikC5jEy1QwiEe4ln2S7MzekM0qke1Y9Jg 
 
-22. Return to the VNCs shell terminal.
+25. Return to the VNCs shell terminal.
 
-23. Enter the following commands to run DNS Utils and test your setup.
+26. Enter the following commands to run DNS Utils and test your setup.
 
 ```bash
 exit
@@ -325,15 +334,15 @@ n1 = 172.18.0.21
 s1 = 172.18.0.31
 ```
 
-24. If not:
+27. If not:
 - SSH to the base VM
 - Stop and remove DNS container and try again.
 
 Backup DNS changes to a Docker image in GCR. This requires 'write' access to the 'redislabs-university' repo. A service account key was created in GCP for Docker and stored in gs://admin-training-bucket/ru-gcr-write-key.json.
 
-25. From GCP console, SSH to the VM so you're using your Redis Labs GCP account to perform the next steps.
+28. From GCP console, SSH to the VM so you're using your Redis Labs GCP account to perform the next steps.
 
-26. Download the key from GCS to the VM and authenticate Docker to GCR.
+29. Download the key from GCS to the VM and authenticate Docker to GCR.
 
 ```bash
 gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json /tmp
@@ -350,7 +359,7 @@ Login Succeeded
 
 Run the following commands with 'sudo'.
 
-27. Commit changes to the DNS container in a local image, tag it for upload to GCR, and push the image.
+30. Commit changes to the DNS container in a local image, tag it for upload to GCR, and push the image.
 
 ```bash
 sudo docker commit vanilla-dns admin-training-dns
@@ -360,7 +369,7 @@ sudo docker push gcr.io/redislabs-university/admin-training-dns
 
 ```
 
-28. Replace the DNS container with the GCR image.
+31. Replace the DNS container with the GCR image.
 
 ```bash
 sudo docker stop vanilla-dns
@@ -373,7 +382,7 @@ sudo docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/e
 
 ```
 
-29. Return to the VNCs shell terminal and run the following to make sure DNS still works.
+32. Return to the VNCs shell terminal and run the following to make sure DNS still works.
 
 ```bash
 run_dnsutils
@@ -382,7 +391,7 @@ nslookup n1.rlabs.org
 
 ```
 
-30. SSH to the base VM and add Redis Insight as a container so students can view database contents in a GUI.
+33. SSH to the base VM and add Redis Insight as a container so students can view database contents in a GUI.
 
 ```bash
 exit
@@ -399,9 +408,9 @@ You have the following:
 
 Save your work.
 
-31. Create a snapshot of the VM called 'admin-training-phase-1'.
+34. Create a snapshot of the VM called 'admin-training-phase-1'.
 
-32. Create an image from the snapshot called 'admin-training-phase-1'.
+35. Create an image from the snapshot called 'admin-training-phase-1'.
 
 
 
