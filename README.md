@@ -53,6 +53,7 @@ Networking | admin-training-vpc
 sudo su
 apt -y update
 apt -y install vim
+
 update-alternatives --config editor <<< 3
 
 
@@ -81,7 +82,7 @@ apt-get install \
     apt-transport-https \
     ca-certificates \
     curl \
-    software-properties-common
+    software-properties-common <<< Y
     
     
 ```
