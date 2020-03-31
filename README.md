@@ -37,7 +37,7 @@ Subnet IP Address Range | 172.18.0.0/16
   
 Requirement  | Specification  
 ------------ | -------------
-Name | admin-training-phase-1
+Name | admin-training-stage-1
 CPU | 4
 Memory | 15 GB
 OS | Ubuntu 18.04 LTS
@@ -357,9 +357,9 @@ You have the following:
 
 Save your work.
 
-29. Create a snapshot of the VM called 'admin-training-phase-1'.
+29. Create a snapshot of the VM called 'admin-training-stage-1'.
 
-30. Create an image from the snapshot called 'admin-training-phase-1'.
+30. Create an image from the snapshot called 'admin-training-stage-1'.
 
 
 
@@ -378,7 +378,7 @@ Now you'll configure the VNC container with:
 - 2 terminal launchers to nodes
 - 2 terminal launchers to VNC and the base VM.
 
-1. Create a new VM called 'admin-training-phase-2' from image 'admin-training-phase-1'.
+1. Create a new VM called 'admin-training-stage-2' from image 'admin-training-stage-1'.
 
 NOTE: May need to run with startup script:
 ```bash
@@ -538,7 +538,7 @@ You're ready to create user instances.
 
 Save your work.
 
-24. Create a snapshot of the VM called 'admin-training-phase-2'.
+24. Create a snapshot of the VM called 'admin-training-stage-2'.
 
-25. Create an image from the snapshot called 'admin-training-phase-2'.
+25. Create an image from the snapshot called 'admin-training-stage-2'.
 
