@@ -47,7 +47,7 @@ Networking | admin-training-vpc
   
 4. SSH to the base VM from GCP console to finish setup.
 
-5. Install and set default editor to vim.
+5. Install and set default editor to vim and add 'trainee' user to 'docker' group with perms to start and stop containers.
 
 ```bash 
 sudo su
@@ -56,12 +56,8 @@ apt -y install vim
 
 update-alternatives --config editor <<< 3
 
+# Add 'trainee' user
 
-```
-
-6. Add 'trainee' user to 'docker' group with permission to start and stop containers.
-
-```bash
 adduser --disabled-password --gecos "" trainee
 groupadd docker
 usermod -aG docker trainee
@@ -84,12 +80,6 @@ apt-get install \
     curl \
     software-properties-common <<< Y
     
-    
-```
-
-Enter 'Y' to continue.
-
-```bash
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
 apt-key fingerprint 0EBFCD88
@@ -136,7 +126,7 @@ source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
 
-ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
+#ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
 
 alias create_north_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_south_cluster.sh "
