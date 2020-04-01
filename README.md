@@ -355,6 +355,16 @@ docker run --name insight -d -v redisinsight:/db -v /home/trainee/resolve/resolv
  
 ```
 
+29. Remove the known_hosts file from /headless/.ssh/known_hosts.
+
+NOTE: Otherwise, you get a nasty warning 'REMOTE HOST ID HAS CHANGED!' and 'Host key verification failed' messages when you try to SSH to the base VM in student images.
+
+```bash
+exit
+rm /headless/.ssh/known_hosts
+ 
+```
+
 You have the following:
 - A vanilla VNC container
 - A configured DNS server
@@ -501,6 +511,13 @@ cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin
 ```
 
 20. Commit changes to the VNC container in a local image, tag it for GCR, and upload it.
+
+NOTE: There's a command to remove known_hosts as the 'default' user in the VNC container just prior to committing changes to an image. Otherwise, you get a nasty warning 'REMOTE HOST ID HAS CHANGED!' and 'Host key verification failed' messages when you try to SSH to the base VM in student images.
+
+```bash
+rm /headless/.ssh/known_hosts
+ 
+```
 
 ```bash
 sudo docker commit vanilla-vnc admin-training-vnc
