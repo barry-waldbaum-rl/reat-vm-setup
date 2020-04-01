@@ -518,7 +518,7 @@ sudo docker rmi vanilla-vnc
 sudo docker rmi consol/ubuntu-xfce-vnc
 sudo docker rmi admin-training-vnc
 
-sudo docker run --name configured-vnc  -d -e VNC_PW=trainee! --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
+sudo docker run --name configured-vnc  -d -e VNC_PW=trainee! --restart=always --net rlabs --hostname vnc-terminal.rlabs.org --ip 172.18.0.2 -p 80:6901  gcr.io/redislabs-university/admin-training-vnc
  
 ```
 
