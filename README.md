@@ -310,7 +310,8 @@ nslookup s1.rlabs.org
 25. From GCP console, SSH to the VM and push DNS changes to a GCR image. This requires 'write' access to the 'redislabs-university' repo. For this, a service account key was created and stored in GCS.
 
 ```bash
-# Download key and authenticate Docker to GCR
+# In your GCP employee account, download key and authenticate Docker to GCR
+exit
 gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json /tmp
 cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin https://gcr.io
 
