@@ -52,7 +52,7 @@ Networking | admin-training-vpc
 sudo su
 apt -y update
 apt -y install vim
-
+ 
 update-alternatives --config editor <<< 3
 
 adduser --disabled-password --gecos "" trainee
