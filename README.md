@@ -309,7 +309,7 @@ nslookup s1.rlabs.org
 
 25. From GCP console, SSH to the VM and push DNS changes to a GCR image. This requires 'write' access to the 'redislabs-university' repo. For this, a service account key was created and stored in GCS.
 
-NOTE: If you accidentally run this command as 'trainee', you'll get 'config.json' errors later when try to run containers because the 'trainee' user will check the GCR repo.
+NOTE: If you accidentally run this command as 'trainee', you'll get 'config.json' errors later when try to run containers because the 'trainee' user will check the GCR repo. If you run this as 'trainee' by mistake, you can always log in as 'root' and remove the directory /home/trainee/.docker which contains the contfig.json file.
 
 ```bash
 # In your GCP employee account, download key and authenticate Docker to GCR
