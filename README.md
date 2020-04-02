@@ -53,6 +53,9 @@ sudo su
 apt -y update
 apt -y install vim
  
+```
+
+```bash
 update-alternatives --config editor <<< 3
 
 adduser --disabled-password --gecos "" trainee
@@ -119,8 +122,6 @@ cat << EOF > vnc_docker/bashrc
 source \$STARTUPDIR/generate_container_user
 
 export PS1='\e[1;33m\u@\h\e[m:\e[1;34m\w\e[m\$ '
-
-#ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
 
 alias create_north_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_north_cluster.sh "
 alias create_south_cluster="ssh -t trainee@172.18.0.1 ./scripts/create_south_cluster.sh "
@@ -221,9 +222,6 @@ chmod 755 scripts/run_dnsutils.sh
 12. Create the Docker network.
 
 ```bash
-#mkdir resolve
-#echo 'nameserver 172.18.0.20' > resolve/resolv.conf
-
 docker network create --subnet=172.18.0.0/16 rlabs
  
 ```
@@ -257,18 +255,16 @@ docker run --name vanilla-vnc  -d -e VNC_PW=trainee! --restart=always --net rlab
  
 ```
 
-You have VNC running and can configure Bind DNS with its GUI.
-
-14. Point your browser to the VM public IP (it's in GCP console).
-
-15. Sign in to VNC with password 'trainee!'.
-
-16. Open a terminal shell window.
-
-17. Run Bind DNS as a container.
+14. Run Redis Insight as a container so students can view database contents in a GUI.
 
 ```bash
-ssh_base-vm
+docker run --name insight -d -v redisinsight:/db --restart=always --net rlabs --dns 172.18.0.20 --hostname insight.rlabs.org --ip 172.18.0.4  redislabs/redisinsight
+ 
+```
+
+15. Run Bind DNS as a container.
+
+```bash
 docker run --name vanilla-dns -d --restart=always --net rlabs --dns 172.18.0.20 --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  sameersbn/bind
  
 ```
@@ -279,7 +275,11 @@ Someday, you may use CoreDNS with Corefile and rlabs.db.
 docker run --name vanilla-dns -d -v /home/trainee/coredns/:/root/ --restart=always --net rlabs --dns 172.18.0.20 --hostname ns.rlabs.org --ip 172.18.0.20  coredns/coredns -conf /root/Corefile
 ```
 
-Configure Bind DNS.
+Configure Bind DNS with its GUI on VNC desktop.
+
+16. Point your browser to the VM public IP (it's in GCP console).
+
+17. Sign in to VNC with password 'trainee!'.
 
 18. Open Chrome browser on the VNC desktop.
 
@@ -291,29 +291,49 @@ Configure Bind DNS.
 
 https://drive.google.com/open?id=1QBFCyuU9uUikC5jEy1QwiEe4ln2S7MzekM0qke1Y9Jg 
 
-22. Return to the VNCs shell terminal.
+Test DNS config. If DNS doesn't work, remove the container and try again.
 
-23. Run the following to test DNS is working (n1 = .21, n2 = .22).
+22. From a VNC shell terminal, run the following.
 
 ```bash
-exit
-./scripts/run_dnsutils.sh
+run_dnsutils
 nslookup n1.rlabs.org
 nslookup s1.rlabs.org
+exit
  
 ```
 
-24. If not:
-- SSH to the base VM
-- Stop and remove DNS container and try again.
-
-25. From GCP console, SSH to the VM and push DNS changes to a GCR image. This requires 'write' access to the 'redislabs-university' repo. For this, a service account key was created and stored in GCS.
-
-NOTE: If you accidentally run this command as 'trainee', you'll get 'config.json' errors later when try to run containers because the 'trainee' user will check the GCR repo. If you run this as 'trainee' by mistake, you can always log in as 'root' and remove the directory /home/trainee/.docker which contains the contfig.json file.
+23. Start Redis Enterprise nodes.
 
 ```bash
-# In your GCP employee account, download key and authenticate Docker to GCR
-# You have to run exit twice to get from 'trainee' to 'root' and 'root' to <your employee GCP account>
+start_north_nodes
+ 
+```
+
+25. Build the cluster.
+
+```bash
+create_north_cluster
+ 
+```
+
+26. Resolve cluster names - they only resolve when you have a cluster.
+
+```bash
+run_dnsutils
+dig @ns.rlabs.org north.rlabs.org
+exit
+ 
+```
+
+Push DNS changes to a GCR image.
+
+27. Return to SSH and run these commands as your GCP user.
+
+If you run these as 'trainee' you'll get 'config.json' errors later when running containers. If that happens, log in as 'root' and remove /home/trainee/.docker/.
+
+```bash
+# authenticate Docker to GCR
 exit
 exit
 gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json /tmp
@@ -326,7 +346,9 @@ sudo docker push gcr.io/redislabs-university/admin-training-dns
  
 ```
 
-26. Replace the DNS container with the GCR image.
+Reset your VM before saving your work.
+
+28. Replace 'vanilla-dns' with 'configured-dns' from the GCR iamge. 
 
 ```bash
 sudo docker stop vanilla-dns
@@ -338,30 +360,16 @@ sudo docker run --name configured-dns -d --restart=always --net rlabs --dns 172.
  
 ```
 
-27. Return to the VNCs shell terminal and run the following to make sure DNS still works.
+29. Return to VNC shell. Remove 'known_hosts' and stop 'north' nodes.
+
+'known_hosts' gives 'REMOTE HOST ID HAS CHANGED! Host key verification failed' errors.
+Running nodes configure a cluster on startup.
 
 ```bash
-run_dnsutils
-nslookup n1.rlabs.org
- 
-```
-
-28. SSH to the base VM and add Redis Insight as a container so students can view database contents in a GUI.
-
-```bash
-exit
-ssh_base-vm
-docker run --name insight -d -v redisinsight:/db --restart=always --net rlabs --dns 172.18.0.20 --hostname insight.rlabs.org --ip 172.18.0.4  redislabs/redisinsight
- 
-```
-
-29. Remove the known_hosts file from /headless/.ssh/known_hosts.
-
-NOTE: Otherwise, you get a nasty warning 'REMOTE HOST ID HAS CHANGED!' and 'Host key verification failed' messages when you try to SSH to the base VM in student images.
-
-```bash
-exit
 rm /headless/.ssh/known_hosts
+stop_n1
+stop_n2
+stop_n3
  
 ```
 
@@ -412,32 +420,6 @@ Before configuring VNC, make sure:
 - Databases get accessed by cluster names from command line and Insight.
 
 
-4. Start all Redis Enterprise nodes in containers (3 north, 3 south).
-
-```bash
-start_north_nodes
-start_south_nodes
- 
-```
-
-5. Build Redis Enterprise clusters from nodes.
-
-```bash
-create_north_cluster
-create_south_cluster
- 
-```
-
-6. Run the following to make sure DNS is resolving cluster names.
-
-NOTE: Cluster names only resolve after you join nodes to clusters.
-
-```bash
-run_dnsutils
-dig @ns.rlabs.org north.rlabs.org
-dig @ns.rlabs.org south.rlabs.org
- 
-```
 
 7. Open Chrome browser in VNC and point it to admin consoles on port 8443 as follows:
 
