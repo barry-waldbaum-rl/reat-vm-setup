@@ -307,17 +307,18 @@ exit
 
 ```bash
 start_north_nodes
+start_south_nodes
  
 ```
 
-25. Build the cluster.
+24. Build the cluster.
 
 ```bash
 create_north_cluster
  
 ```
 
-26. Resolve cluster names - they only resolve when you have a cluster.
+25. Resolve cluster names - they only resolve when you have a cluster.
 
 ```bash
 run_dnsutils
@@ -328,7 +329,7 @@ exit
 
 Push DNS changes to a GCR image.
 
-27. Return to SSH and run these commands as your GCP user.
+26. Return to SSH from GCP console so you're using your GCP account.
 
 If you run these as 'trainee' you'll get 'config.json' errors later when running containers. If that happens, log in as 'root' and remove /home/trainee/.docker/.
 
@@ -348,7 +349,7 @@ sudo docker push gcr.io/redislabs-university/admin-training-dns
 
 Reset your VM before saving your work.
 
-28. Replace 'vanilla-dns' with 'configured-dns' from the GCR iamge. 
+27. Replace 'vanilla-dns' with 'configured-dns' from the GCR iamge. 
 
 ```bash
 sudo docker stop vanilla-dns
@@ -360,7 +361,7 @@ sudo docker run --name configured-dns -d --restart=always --net rlabs --dns 172.
  
 ```
 
-29. Return to VNC shell. Remove 'known_hosts' and stop 'north' nodes.
+28. Return to VNC shell. Remove 'known_hosts' and stop 'north' nodes.
 
 'known_hosts' gives 'REMOTE HOST ID HAS CHANGED! Host key verification failed' errors.
 Running nodes configure a cluster on startup.
@@ -373,10 +374,11 @@ stop_n3
  
 ```
 
-You have the following:
-- A vanilla VNC container
-- A configured DNS server
-- Redis Insight.
+Now you have:
+- vanilla VNC
+- configured DNS
+- Redis Insight
+- RE nodes running.
 
 Save your work.
 
@@ -390,23 +392,18 @@ Save your work.
 
 # Stage 2
 
-You have the following:
-- A vanilla VNC container
-- A configured DNS container
-- Redis Insight.
+Now you have:
+- vanilla VNC
+- configured DNS
+- Redis Insight
+- RE nodes running.
 
-Now you'll configure the VNC container with:
-- A background image and 2 workspaces
-- A Chrome launcher
-- 2 terminal launchers to nodes
-- 2 terminal launchers to VNC and the base VM.
+You'll configure VNC with:
+- A background image
+- 2 workspaces
+- 5 launchers (Chrome and 4 terminal shells).
 
 1. Create a new VM called 'admin-training-stage-2' from image 'admin-training-stage-1'.
-
-NOTE: May need to run with startup script:
-```bash
-ssh-keygen -f "/headless/.ssh/known_hosts" -R 172.18.0.1
-```
 
 Configure VNC.
 
@@ -414,16 +411,11 @@ Configure VNC.
 
 3. Open a terminal shell window.
 
-Before configuring VNC, make sure:
-- Nodes start and join clusters
-- DNS resolves cluster names
-- Databases get accessed by cluster names from command line and Insight.
-
-
-
-7. Open Chrome browser in VNC and point it to admin consoles on port 8443 as follows:
+4. Open Chrome browser in VNC and point it to admin consoles:
 
 ```bash
+https://172.18.0.20:10000
+http://insight:8001
 https://n1:8443
 https://n2:8443
 https://n3:8443
@@ -432,59 +424,19 @@ https://s2:8443
 https://s3:8443
 ```
 
-8. Create a database from node 'n1' listening on port '12000'.
+5. Save tabs as bookmarks.
 
-9. Run the following in a terminal to SSH to node 'n2'.
+6. Set pages to open on startup.
 
-```bash
-ssh_n2
- 
-```
-
-10. Connect redis-cli to the database from node n2.
-
-```bash
-redis-cli -p 12000 -h north.rlabs.org
- 
-```
-
-Test the database connection from Redis Insight.
-
-11. Open another tab in Chrome and point it the Redis Insight at:
-
-```bash
-http://insight:8001
-```
-
-12. Click Add Database to add the database to Redis Insight and enter the following:
-Name | anything
-Host | north.rlabs.org
-Port | 12000
-Password | blank
-
-13. Make sure it connects.
-
-14. Click Browse to see the key you set.
-
-Now you know DNS, Redis Insight, and your node and cluster scripts work.
-
-15. Open another tab in Chrome and point it to the DNS UI and sign in with 'root' and 'password'.
-
-```bash
-https://172.18.0.20:10000
-```
-
-16. Save the 8 tabs as bookmarks and save the pages to open on startup to the current pages and then fix the setting to always open like that.
-
-17. Follow steps here to set up the VNC desktop with a Redis background image, 2 workspaces, and launchers for opening Chrome and shell terminals in specific locations and opening tabs to node command line shells.
+7. Follow steps here to set up VNC with background, workspaces, and launchers.
 
 https://docs.google.com/document/d/1X8K2jZTwBLr_jG9a01-u_dxRrTwb2URNCy0zXoQZUG4/edit#heading=h.ihyyp7do45r3
 
-Push the VNC container to a GCR image. Then download and test it.
+Push VNC to GCR, download and test.
 
-18. SSH to the VM 'from GCP console' so you're using your GCP account to perform the next steps.
+8. SSH to the VM from GCP console so you're using your GCP account.
 
-19. Download the service account key again and authenticate Docker to GCR with the following commands.
+9. Download the service account key again and authenticate Docker to GCR.
 
 ```bash
 gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json /tmp/
@@ -492,23 +444,17 @@ cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin
  
 ```
 
-20. Commit changes to the VNC container in a local image, tag it for GCR, and upload it.
-
-NOTE: There's a command to remove known_hosts as the 'default' user in the VNC container just prior to committing changes to an image. Otherwise, you get a nasty warning 'REMOTE HOST ID HAS CHANGED!' and 'Host key verification failed' messages when you try to SSH to the base VM in student images.
+10. Commit changes and upload to GCR.
 
 ```bash
 rm /headless/.ssh/known_hosts
- 
-```
-
-```bash
 sudo docker commit vanilla-vnc admin-training-vnc
 sudo docker tag admin-training-vnc gcr.io/redislabs-university/admin-training-vnc
 sudo docker push gcr.io/redislabs-university/admin-training-vnc
  
 ```
 
-21. Replace the VNC container and local image with the GCR image and test it.
+11. Replace with GCR image and test.
 
 ```bash
 sudo docker stop vanilla-vnc
@@ -521,28 +467,17 @@ sudo docker run --name configured-vnc  -d -e VNC_PW=trainee! --restart=always --
  
 ```
 
-22. Test VNC still works.
-
-
-23. Retart nodes in containers so they are running but not configured in a cluster.
-
-```bash
-start_north_nodes
-start_south_nodes
- 
-```
-
-You have the following:
-- DNS container and image
-- VNC container and image
-- Redis Insight container
+Now you have:
+- configured DNS
+- configured VNC
+- Redis Insight
 - Nodes running.
 
 You're ready to create user instances.
 
 Save your work.
 
-24. Create a snapshot of the VM called 'admin-training-stage-2'.
+12. Create a snapshot of the VM called 'admin-training-stage-2'.
 
-25. Create an image from the snapshot called 'admin-training-stage-2'.
+13. Create an image from the snapshot called 'admin-training-stage-2'.
 
