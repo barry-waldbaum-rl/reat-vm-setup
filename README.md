@@ -156,9 +156,9 @@ cat << EOF > scripts/start_north_nodes.sh
 docker kill n1; docker rm n1;
 docker kill n2; docker rm n2;
 docker kill n3; docker rm n3;
-docker run --name n1 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname n1.rlabs.org --ip 172.18.0.21 redislabs/redis
-docker run --name n2 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname n2.rlabs.org --ip 172.18.0.22 redislabs/redis
-docker run --name n3 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname n3.rlabs.org --ip 172.18.0.23 redislabs/redis
+docker run --name n1 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname n1.rlabs.org --ip 172.18.0.21 redislabs/redis
+docker run --name n2 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname n2.rlabs.org --ip 172.18.0.22 redislabs/redis
+docker run --name n3 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname n3.rlabs.org --ip 172.18.0.23 redislabs/redis
 docker exec --user root n1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -169,9 +169,9 @@ cat << EOF > scripts/start_south_nodes.sh
 docker kill s1; docker rm s1;
 docker kill s2; docker rm s2;
 docker kill s3; docker rm s3;
-docker run --name s1 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname s1.rlabs.org --ip 172.18.0.31  redislabs/redis
-docker run --name s2 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname s2.rlabs.org --ip 172.18.0.32 redislabs/redis
-docker run --name s3 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname s3.rlabs.org --ip 172.18.0.33 redislabs/redis
+docker run --name s1 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname s1.rlabs.org --ip 172.18.0.31 redislabs/redis
+docker run --name s2 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname s2.rlabs.org --ip 172.18.0.32 redislabs/redis
+docker run --name s3 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname s3.rlabs.org --ip 172.18.0.33 redislabs/redis
 docker exec --user root s1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root s3 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -206,7 +206,7 @@ EOF
 
 cat << EOF > scripts/run_dnsutils.sh
 docker kill dnsutils; docker rm dnsutils
-docker run --name dnsutils -it -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --net rlabs --hostname dnsutils.rlabs.org --ip 172.18.0.6 tutum/dnsutils
+docker run --name dnsutils -it --net rlabs --dns 172.18.0.20 --hostname dnsutils.rlabs.org --ip 172.18.0.6 tutum/dnsutils
 EOF
 
 # make the scripts executable
@@ -269,14 +269,14 @@ You have VNC running and can configure Bind DNS with its GUI.
 
 ```bash
 ssh_base-vm
-docker run --name vanilla-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  sameersbn/bind
+docker run --name vanilla-dns -d --restart=always --net rlabs --dns 172.18.0.20 --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  sameersbn/bind
  
 ```
 
 Someday, you may use CoreDNS with Corefile and rlabs.db.
 
 ```bash
-docker run --name vanilla-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf -v /home/trainee/coredns/:/root/ --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20  coredns/coredns -conf /root/Corefile
+docker run --name vanilla-dns -d -v /home/trainee/coredns/:/root/ --restart=always --net rlabs --dns 172.18.0.20 --hostname ns.rlabs.org --ip 172.18.0.20  coredns/coredns -conf /root/Corefile
 ```
 
 Configure Bind DNS.
@@ -334,7 +334,7 @@ sudo docker rm vanilla-dns
 sudo docker rmi sameersbn/bind
 sudo docker rmi admin-training-dns
 
-sudo docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
+sudo docker run --name configured-dns -d --restart=always --net rlabs --dns 172.18.0.20 --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
  
 ```
 
@@ -351,7 +351,7 @@ nslookup n1.rlabs.org
 ```bash
 exit
 ssh_base-vm
-docker run --name insight -d -v redisinsight:/db -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname insight.rlabs.org --ip 172.18.0.4  redislabs/redisinsight
+docker run --name insight -d -v redisinsight:/db --restart=always --net rlabs --dns 172.18.0.20 --hostname insight.rlabs.org --ip 172.18.0.4  redislabs/redisinsight
  
 ```
 
