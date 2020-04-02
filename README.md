@@ -222,7 +222,8 @@ chmod 755 scripts/run_dnsutils.sh
 
 ```bash
 mkdir resolve
-xxx
+echo 'nameserver 172.18.0.20' > resolve/resolv.conf
+
 docker network create --subnet=172.18.0.0/16 rlabs
  
 ```
