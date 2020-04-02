@@ -158,7 +158,6 @@ docker kill n2; docker rm n2;
 docker kill n3; docker rm n3;
 docker run --name n1 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname n1.rlabs.org --ip 172.18.0.21 redislabs/redis
 docker run --name n2 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname n2.rlabs.org --ip 172.18.0.22 redislabs/redis
-# docker run --name n2 -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --cap-add=ALL --net rlabs --hostname n2.rlabs.org --ip 172.18.0.22 redislabs/redis
 docker run --name n3 -d --restart=always --cap-add=ALL --net rlabs --dns 172.18.0.20 --hostname n3.rlabs.org --ip 172.18.0.23 redislabs/redis
 docker exec --user root n1 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
 docker exec --user root n2 bash -c "iptables -t nat -I PREROUTING -p udp --dport 53 -j REDIRECT --to-ports 5300"
@@ -222,9 +221,6 @@ chmod 755 scripts/run_dnsutils.sh
 12. Create the Docker network.
 
 ```bash
-mkdir resolve
-echo 'nameserver 172.18.0.20' > resolve/resolv.conf
-
 docker network create --subnet=172.18.0.0/16 rlabs
  
 ```
