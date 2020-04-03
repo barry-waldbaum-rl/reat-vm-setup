@@ -367,10 +367,10 @@ sudo docker run --name configured-dns -d --restart=always --net rlabs --dns 172.
 Running nodes configure a cluster on startup.
 
 ```bash
-rm /headless/.ssh/known_hosts
 stop_n1
 stop_n2
 stop_n3
+rm /headless/.ssh/known_hosts
  
 ```
 
