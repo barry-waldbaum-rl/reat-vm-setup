@@ -462,7 +462,16 @@ cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin
  
 ```
 
-11. Commit changes and upload to GCR.
+11. Return to VNC terminal.
+
+NOTE: Had to move this up before taking VNC Docker image.
+
+```bash
+rm /headless/.ssh/known_hosts
+ 
+```
+
+12. Commit changes and upload to GCR.
 
 ```bash
 sudo docker commit vanilla-vnc admin-training-vnc
@@ -471,7 +480,7 @@ sudo docker push gcr.io/redislabs-university/admin-training-vnc
  
 ```
 
-12. Replace with GCR image and test.
+13. Replace with GCR image and test.
 
 ```bash
 sudo docker stop vanilla-vnc
@@ -484,18 +493,11 @@ sudo docker run --name configured-vnc  -d -e VNC_PW=trainee! --restart=always --
  
 ```
 
-13. Stop and remove node containers. Removing them forces manual restart on a new VM. Otherwise, cluster names do not resolve after you create a cluster.
+14. Stop and remove node containers. Removing them forces manual restart on a new VM. Otherwise, cluster names do not resolve after you create a cluster.
 
 ```bash
 sudo docker stop n1 n2 n3 s1 s2 s3
 sudo docker rm n1 n2 n3 s1 s2 s3
- 
-```
-
-14. Return to VNC terminal.
-
-```bash
-rm /headless/.ssh/known_hosts
  
 ```
 
