@@ -361,26 +361,24 @@ sudo docker run --name configured-dns -d --restart=always --net rlabs --dns 172.
  
 ```
 
-28. Return to VNC shell. Remove 'known_hosts' and stop 'north' nodes.
-
-'known_hosts' gives 'REMOTE HOST ID HAS CHANGED! Host key verification failed' errors.
-Running nodes configure a cluster on startup.
-
-```bash
-stop_n1
-stop_n2
-stop_n3
-rm /headless/.ssh/known_hosts
- 
-```
-
 Now you have:
 - vanilla VNC
 - configured DNS
 - Redis Insight
-- RE nodes running.
+- RE nodes running, not clustered.
 
 Save your work.
+
+28. Return to VNC shell. Remove 'known_hosts' and restart 'north' nodes.
+
+'known_hosts' gives 'REMOTE HOST ID HAS CHANGED! Host key verification failed' errors.
+Clustered nodes would re-create a cluster on startup.
+
+```bash
+start_north_nodes
+rm /headless/.ssh/known_hosts
+ 
+```
 
 29. Create a snapshot of the VM called 'admin-training-stage-1'.
 
@@ -449,7 +447,6 @@ cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin
 10. Commit changes and upload to GCR.
 
 ```bash
-rm /headless/.ssh/known_hosts
 sudo docker commit vanilla-vnc admin-training-vnc
 sudo docker tag admin-training-vnc gcr.io/redislabs-university/admin-training-vnc
 sudo docker push gcr.io/redislabs-university/admin-training-vnc
@@ -473,13 +470,20 @@ Now you have:
 - configured DNS
 - configured VNC
 - Redis Insight
-- Nodes running.
+- Nodes running, not clustered.
 
 You're ready to create user instances.
 
 Save your work.
 
-12. Create a snapshot of the VM called 'admin-training-stage-2'.
+12. Return to VNC terminal.
 
-13. Create an image from the snapshot called 'admin-training-stage-2'.
+```bash
+rm /headless/.ssh/known_hosts
+ 
+```
+
+13. Create a snapshot of the VM called 'admin-training-stage-2'.
+
+14. Create an image from the snapshot called 'admin-training-stage-2'.
 
