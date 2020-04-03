@@ -407,6 +407,8 @@ You'll configure VNC with:
 
 Configure VNC.
 
+NOTE: There is one dependency for VNC. It includes the private key for 'trainee' to silently authenticate to the base VM. If you update VNC config, you must create it with a new VM.
+
 2. Sign in to VNC desktop from your laptop browser with password 'trainee!'.
 
 3. Open a terminal shell window.
