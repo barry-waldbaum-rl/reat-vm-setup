@@ -360,7 +360,7 @@ sudo docker rm vanilla-dns
 sudo docker rmi sameersbn/bind
 sudo docker rmi admin-training-dns
 
-sudo docker run --name configured-dns -d -v /home/trainee/resolve/resolv.conf:/etc/resolv.conf --restart=always --net rlabs --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
+sudo docker run --name configured-dns -d --restart=always --net rlabs --dns 172.18.0.20 --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
  
 ```
 
