@@ -363,16 +363,15 @@ sudo docker rmi admin-training-dns
 sudo docker run --name configured-dns -d --restart=always --net rlabs --dns 172.18.0.20 --hostname ns.rlabs.org --ip 172.18.0.20 -p 10000:10000/tcp  gcr.io/redislabs-university/admin-training-dns
  
 ```
+28. Stop and remove node containers. Removing them forces manual restart on a new VM. Otherwise, cluster names do not resolve after you create a cluster.
 
-Now you have:
-- vanilla VNC
-- configured DNS
-- Redis Insight
-- RE nodes running, not clustered.
+```bash
+sudo docker stop n1 n2 n3 s1 s2 s3
+sudo docker rm n1 n2 n3 s1 s2 s3
+ 
+```
 
-Save your work.
-
-28. Return to VNC shell. Remove 'known_hosts' and restart 'north' nodes.
+29. Return to VNC shell. Remove 'known_hosts' and restart 'north' nodes.
 
 'known_hosts' gives 'REMOTE HOST ID HAS CHANGED! Host key verification failed' errors.
 Clustered nodes would re-create a cluster on startup.
@@ -382,6 +381,14 @@ start_north_nodes
 rm /headless/.ssh/known_hosts
  
 ```
+
+Now you have:
+- vanilla VNC
+- configured DNS
+- Redis Insight
+- RE node image, containers stopped and removed.
+
+Save your work.
 
 29. Create a snapshot of the VM called 'admin-training-stage-1'.
 
@@ -397,7 +404,7 @@ Now you have:
 - vanilla VNC
 - configured DNS
 - Redis Insight
-- RE nodes running.
+- RE node image, containers stopped and removed.
 
 You'll configure VNC with:
 - A background image
@@ -414,7 +421,15 @@ IMPORTANT: There is a dependency for VNC. It includes the private key for 'train
 
 3. Open a terminal shell window.
 
-4. Open Chrome browser in VNC and point it to admin consoles:
+4. Restart RE node containers.
+
+```bash
+start_north_nodes
+start_south_nodes
+ 
+```
+
+5. Open Chrome browser in VNC and point it to admin consoles:
 
 ```bash
 https://172.18.0.20:10000
@@ -427,19 +442,19 @@ https://s2:8443
 https://s3:8443
 ```
 
-5. Save tabs as bookmarks.
+6. Save tabs as bookmarks.
 
-6. Set pages to open on startup.
+7. Set pages to open on startup.
 
-7. Follow steps here to set up VNC with background, workspaces, and launchers.
+8. Follow steps here to set up VNC with background, workspaces, and launchers.
 
 https://docs.google.com/document/d/1X8K2jZTwBLr_jG9a01-u_dxRrTwb2URNCy0zXoQZUG4/edit#heading=h.ihyyp7do45r3
 
 Push VNC to GCR, download and test.
 
-8. SSH to the VM from GCP console so you're using your GCP account.
+9. SSH to the VM from GCP console so you're using your GCP account.
 
-9. Download the service account key again and authenticate Docker to GCR.
+10. Download the service account key again and authenticate Docker to GCR.
 
 ```bash
 gsutil cp gs://admin-training-bucket/ru-gcr-write-key.json /tmp/
@@ -447,7 +462,7 @@ cat /tmp/ru-gcr-write-key.json | sudo docker login -u _json_key --password-stdin
  
 ```
 
-10. Commit changes and upload to GCR.
+11. Commit changes and upload to GCR.
 
 ```bash
 sudo docker commit vanilla-vnc admin-training-vnc
@@ -456,7 +471,7 @@ sudo docker push gcr.io/redislabs-university/admin-training-vnc
  
 ```
 
-11. Replace with GCR image and test.
+12. Replace with GCR image and test.
 
 ```bash
 sudo docker stop vanilla-vnc
@@ -469,24 +484,32 @@ sudo docker run --name configured-vnc  -d -e VNC_PW=trainee! --restart=always --
  
 ```
 
-Now you have:
-- configured DNS
-- configured VNC
-- Redis Insight
-- Nodes running, not clustered.
+13. Stop and remove node containers. Removing them forces manual restart on a new VM. Otherwise, cluster names do not resolve after you create a cluster.
 
-You're ready to create user instances.
+```bash
+sudo docker stop n1 n2 n3 s1 s2 s3
+sudo docker rm n1 n2 n3 s1 s2 s3
+ 
+```
 
-Save your work.
-
-12. Return to VNC terminal.
+14. Return to VNC terminal.
 
 ```bash
 rm /headless/.ssh/known_hosts
  
 ```
 
-13. Create a snapshot of the VM called 'admin-training-stage-2'.
+Now you have:
+- configured DNS
+- configured VNC
+- Redis Insight
+- RE node image, containers stopped and removed.
 
-14. Create an image from the snapshot called 'admin-training-stage-2'.
+You're ready to create user instances.
+
+Save your work.
+
+15. Create a snapshot of the VM called 'admin-training-stage-2'.
+
+16. Create an image from the snapshot called 'admin-training-stage-2'.
 
